@@ -1,0 +1,37 @@
+{
+    "$schema": "https://json.schemastore.org/launchsettings.json",
+    "iisSettings": {
+        "windowsAuthentication": false,
+        "anonymousAuthentication": true,
+        "iisExpress": {
+            "applicationUrl": "http://localhost:37744",
+            "sslPort": 0
+        }
+    },
+    "profiles": {
+        "HiData.WebApi": {
+            "commandName": "Project",
+            "launchBrowser": true,
+            "launchUrl": "",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "applicationUrl": "http://127.0.0.1:5170",
+            "dotnetRunMessages": true
+        },
+        "IIS Express": {
+            "commandName": "IISExpress",
+            "launchBrowser": true,
+            "launchUrl": "weatherforecast",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        },
+        "Docker": {
+            "commandName": "Docker",
+            "launchBrowser": true,
+            "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/weatherforecast",
+            "publishAllPorts": true
+        }
+    }
+}

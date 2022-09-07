@@ -1,0 +1,68 @@
+数据表-hiTable-Hi_Module
+  表列表-list-Hi_Module
+    新增-add-Hi_ModuleTypeOperate
+    删除-delete-Hi_ModuleTypeOperate
+  表结构-tableStruct-Hi_Module
+    编辑-edit-Hi_ModuleTypeOperate
+    查看-query-Hi_ModuleTypeOperate
+    修改-update-Hi_ModuleTypeOperate
+  表索引-tableIndex-Hi_Module
+    新增-add-Hi_ModuleTypeOperate
+    删除-delete-Hi_ModuleTypeOperate
+  表数据-tableData-Hi_Module
+    增加-add-Hi_ModuleTypeOperate
+    查看-query-Hi_ModuleTypeOperate
+    修改-update-Hi_ModuleTypeOperate
+    删除-delete-Hi_ModuleTypeOperate
+  API-tableApi-Hi_Module
+    查看-query-Hi_ModuleTypeOperate
+  图表-tableChart-Hi_Module
+    编辑-edit-Hi_ModuleTypeOperate
+    查看-query-Hi_ModuleTypeOperate
+    修改-update-Hi_ModuleTypeOperate
+    删除-delete-Hi_ModuleTypeOperate
+    分享-shared-Hi_ModuleTypeOperate
+
+视图-hiTableView-Hi_Module
+  表列表-list-Hi_Module
+    新增-add-Hi_ModuleTypeOperate
+    删除-delete-Hi_ModuleTypeOperate
+  表结构-tableViewStruct-Hi_Module
+    编辑-edit-Hi_ModuleTypeOperate
+    查看-query-Hi_ModuleTypeOperate
+    修改-update-Hi_ModuleTypeOperate
+  表数据-tableViewData-Hi_Module
+    查看-query-Hi_ModuleTypeOperate
+  API-tableViewApi-Hi_Module
+    查看-query-Hi_ModuleTypeOperate
+  图表-tableViewChart-Hi_Module
+    编辑-edit-Hi_ModuleTypeOperate
+    查看-query-Hi_ModuleTypeOperate
+    修改-update-Hi_ModuleTypeOperate
+    删除-delete-Hi_ModuleTypeOperate
+    分享-shared-Hi_ModuleTypeOperate
+
+数据接口-hiApi-Hi_Module
+  接口列表-list-Hi_Module
+    新增-add-Hi_ModuleTypeOperate
+    删除-delete-Hi_ModuleTypeOperate
+    编辑-edit-Hi_ModuleTypeOperate
+
+数据任务-hiTask-Hi_Module
+  任务列表-list-Hi_Module
+    新增-add-Hi_ModuleTypeOperate
+    删除-delete-Hi_ModuleTypeOperate
+    编辑-edit-Hi_ModuleTypeOperate
+
+数据导出模板-hiExcelTemplate-Hi_Module
+  模板列表-list-Hi_Module
+    新增-add-Hi_ModuleTypeOperate
+    删除-delete-Hi_ModuleTypeOperate
+    编辑-edit-Hi_ModuleTypeOperate
+
+超级管理员-superAdmin-Hi_Role
+系统管理员-systemAdmin-Hi_Role
+  开发部门-devGroup-Hi_Group
+普通成员-normalUser-Hi_Role
+  营运部门-marketingGroup-Hi_Group
+  电商部门-shopGroup-Hi_Group
