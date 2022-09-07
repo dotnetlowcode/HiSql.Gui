@@ -53,26 +53,19 @@ HiSql.GUI的源码分成两部分前端和后台
 `HiGui.DbConnection.DbType` 该节点可配置当前使用的数据类型 注意当前类型一定引用`HiSql`支持的数据库包
 
 
-
-
-
-
-
-
 # 启动
-默认地址：`http://127.0.0.1:5170/hidataweb/index.html#/login`
-帐号：`hisql` 密码:`123456`
 
+- 第一步
 
+    ##### 打开项目配置文件 `Server/HiSql.Gui.WebApi/appsettings.Development.json`,修改连接数据库连接字符串
 
+![image](https://user-images.githubusercontent.com/6754634/188810858-a8938b19-f34e-4afb-bf83-9a20a5c6577d.png)
 
-
-
-
-
-
-
-
-
+- 第二步
+  
+  ##### 编译启动项目,访问地址
+  默认地址：`http://127.0.0.1:5170/hidataweb/index.html#/login`
+  
+  帐号：`hisql` 密码:`123456`
 
 
