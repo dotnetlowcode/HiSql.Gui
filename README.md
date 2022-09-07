@@ -16,6 +16,12 @@ HiSql.GUI的源码分成两部分前端和后台
 注意：`HiSql.Gui.WebApi`  默认引用的是`nuget`上的`HiSql.Gui.dll` 如果需要测试本地的请引用项目`HiSql.GUI.csproj`
 
 
+### 启用
+默认地址：`http://127.0.0.1:5170/hidataweb/index.html#/login`
+帐号：`hisql` 密码:`123456`
+
+
+
 
 
 
