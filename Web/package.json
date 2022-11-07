@@ -2,9 +2,7 @@
   "name": "preview-pro",
   "version": "0.0.0",
   "scripts": {
-    "dev": "vite",
-    "devl": "vite --mode=mylocal",
-    "dev2": "vite --mode=ghpages",
+    "dev": "vite --mode=development",
     "dev:force": "vite --force",
     "build": "vite build --mode=build",
     "build:ghpages": "vue-tsc --noEmit && vite build --base=/preview-pro/ --mode=ghpages",
