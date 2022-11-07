@@ -128,8 +128,8 @@ HiSql.GUI的源码分成两部分前端和后台
 > <img src="https://user-images.githubusercontent.com/6754634/199872437-a1538471-3fde-4a0b-8967-e3c972fcdd17.png" width="80%" >
 
 ## 视图
-可以通过视图设计器创建视图,其他操作和数据表基本一致
-![image](https://user-images.githubusercontent.com/6754634/199877312-c4ab4ce6-9dab-4bd4-8eda-2607ef59bb46.png)
+> 可以通过视图设计器创建视图,其他操作和数据表基本一致
+> <img src="https://user-images.githubusercontent.com/6754634/199877312-c4ab4ce6-9dab-4bd4-8eda-2607ef59bb46.png" width="80%" >
 
 ## 数据接口
 #### 数据接口是为了快速创建API
