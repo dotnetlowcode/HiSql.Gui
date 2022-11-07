@@ -28,7 +28,7 @@ namespace HiSql.GUI.Services
 
         Lazy<ITableTaskRepository> tableTaskRepository;
 
-        public TableTaskService(IHttpContextAccessor httpContextAccessor,HiSqlClient _hiSqlClient, QuartzExtend _quartzExtend, Lazy<ExcelService> _excelService, Lazy<ITableTaskRepository> _tableTaskRepository)
+        public TableTaskService(IHttpContextAccessor httpContextAccessor, HiSqlClient _hiSqlClient, QuartzExtend _quartzExtend, Lazy<ExcelService> _excelService, Lazy<ITableTaskRepository> _tableTaskRepository)
             : base(httpContextAccessor, _hiSqlClient)
         {
             quartzExtend = _quartzExtend;
@@ -178,12 +178,17 @@ namespace HiSql.GUI.Services
 
         private async Task<object> NewCreateData(TableTaskModel taskInfo, string tableName)
         {
-            tableName += DateTime.Now.ToString(taskInfo.StoreType);
+            tableName += DateTime.Now.ToString(taskInfo.SotreFormat);
 
             var primaryKeyName = "Id";
             if (!sqlClient.DbFirst.CheckTabExists(tableName))
             {
-                await CreateTable(tableName, taskInfo.SQL, primaryKeyName);
+                primaryKeyName = await CreateTable(tableName, taskInfo.SQL, primaryKeyName);
+            }
+            else
+            {
+                var tableInfo = sqlClient.DbFirst.GetTabStruct(tableName);
+                primaryKeyName = tableInfo?.GetColumns?.FirstOrDefault(r => r.IsPrimary)?.FieldName;
             }
             await MergeCreateData(taskInfo, tableName, (r) =>
             {
@@ -208,7 +213,7 @@ namespace HiSql.GUI.Services
                     setPrimay(r);
                 });
             }
-            sqlClient.Modi(tableName, pageData);
+            var k = sqlClient.Modi(tableName, pageData).ExecCommand();
             if (totalCount > pageSize)
             {
                 int totalPage = (totalCount + pageSize - 1) / pageSize;
@@ -236,7 +241,7 @@ namespace HiSql.GUI.Services
             return new object();
         }
 
-        public async Task CreateTable(string tableName, string querySql, string primaryKeyName)
+        public async Task<string> CreateTable(string tableName, string querySql, string primaryKeyName)
         {
             var tableColumns = sqlClient.HiSql(querySql).ToColumns();
             var hiTable = new HiTable()
@@ -247,6 +252,10 @@ namespace HiSql.GUI.Services
             {
                 r.TabName = tableName;
             });
+            while (tableColumns.Any(r => r.FieldName == primaryKeyName))
+            {
+                primaryKeyName += "_";
+            }
             //添加一个主键列
             tableColumns.Add(new HiColumn
             {
@@ -257,6 +266,7 @@ namespace HiSql.GUI.Services
             HiSql.Snowflake.WorkerId = 0;
             var tableInfo = new TabInfo(hiTable, tableColumns);
             this.sqlClient.DbFirst.CreateTable(tableInfo);
+            return primaryKeyName;
         }
 
 

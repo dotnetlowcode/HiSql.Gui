@@ -23,7 +23,6 @@ export class CategoryChart extends IChart {
       subTitle?: string | undefined;
     },
   ): Promise<void> {
-    debugger;
     let dimensionsArray = ['X', ...calcFields.map(r => r.showText)];
     let sourceArray: Array<any> = [];
     const maxTypeLength = 10;
@@ -62,7 +61,7 @@ export class CategoryChart extends IChart {
       yAxis: {},
       series: seriesArray,
     };
-    debugger;
+
     echarts.init(this.ChartDom).setOption(chartOption);
   }
 }

@@ -78,10 +78,6 @@ namespace HiSql.GUI.Services
             };
         }
 
-        public async Task Test()
-        {
-            await this.ExcuteExcelExport("3703eac5-27c7-4e2b-a813-1f1a68b3f001");
-        }
 
         /// <summary>
         /// 生成模板Excel保存路径
@@ -97,7 +93,7 @@ namespace HiSql.GUI.Services
         {
             var excelTemplateObj = new HiExcelExportTemplateEntity()
             {
-                TemplateId = Guid.NewGuid().ToString(),
+                TemplateId = Snowflake.NextId().ToString(),
                 FileUrl = request.ExcelUrl,
                 SortNum = 0
             };
@@ -118,7 +114,7 @@ namespace HiSql.GUI.Services
                     {
                         HeadName = map.Key,
                         FieldName = map.Value,
-                        MapId = Guid.NewGuid().ToString(),
+                        MapId = Snowflake.NextId().ToString(),
                         SheetName = sheet.SheetName,
                         TemplateId = excelTemplateObj.TemplateId
                     };
@@ -138,7 +134,7 @@ namespace HiSql.GUI.Services
         const int MaxRowCount = 1000000;
 
 
-        public async Task<object> ExcuteExcelExport(string templateId)
+        public async Task<ExcelExportModel> ExcuteExcelExport(string templateId)
         {
             var (excelExportObj, sheetList, sheetHeaderMapList) = await new HiExcelRepository(this.sqlClient).GetExcelExport(templateId);
             var relativeExcelPath = excelExportObj.FileUrl;
@@ -193,9 +189,9 @@ namespace HiSql.GUI.Services
                      return Tuple.Create(pageDT, rowNumber);
                  }, sheetObj.SheetName, positionNewSavePath, headMap, sheetObj.HeaderRowNumber);
             }, 1);
-            return new
+            return new ExcelExportModel
             {
-                UrlPath = hiSqlConfig + relativeUrlPath
+                UrlPath = (hiSqlConfig.SiteUrl + relativeUrlPath).Replace(@"\", "/")
             };
         }
 

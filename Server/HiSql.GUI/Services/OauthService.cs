@@ -1,6 +1,7 @@
 ﻿using HiSql.GUI.ApiModes.Oauth;
 using HiSql.GUI.Helper;
 using HiSql.GUI.Repository.HisSqlRepository;
+using HiSql.GUI.Repository.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -15,16 +16,19 @@ namespace HiSql.GUI.Services
     public class OauthService : ServiceBase, ITransient
     {
         IHiUserInfoRepository hiUserInfoRepository;
+        UserAuthoritySerivce userAuthoritySerivce;
         HiSqlConfig hiSqlConfig;
         public OauthService(
             IHttpContextAccessor _httpContextAccessor,
             HiSqlClient _hiSqlClient,
             IHiUserInfoRepository _hiUserInfoRepository,
+            UserAuthoritySerivce _userAuthoritySerivce,
             HiSqlConfig _hiSqlConfig
             )
             : base(_httpContextAccessor, _hiSqlClient)
         {
             hiUserInfoRepository = _hiUserInfoRepository;
+            userAuthoritySerivce = _userAuthoritySerivce;
             hiSqlConfig = _hiSqlConfig;
         }
 
@@ -33,7 +37,7 @@ namespace HiSql.GUI.Services
         public async Task<OauthGetTokenResponse> GetToken(OauthGetTokenRequest request)
         {
             var loginUser = await hiUserInfoRepository.GetUserInfo(request.UserName);
-            if(loginUser == null)
+            if (loginUser == null)
             {
                 throw ApiResultModel.ThrowApiExection("用户名或密码错误!");
             }
@@ -54,6 +58,25 @@ namespace HiSql.GUI.Services
             {
                 AccessToken = accessToken
             };
+        }
+
+        public async Task<AddUserResponse> AddUser(AddUserRequest request)
+        {
+            var userInfoTableName = "Hi_UserInfo";
+            if (!await userAuthoritySerivce.HasAuth(this.TokenInfo.UId, userInfoTableName, UserAuthKeyConfig.HiTabletableDataadd))
+            {
+                throw new Exception("没有新增用户权限!");
+            }
+            var userInfo = new HiUserInfoModel()
+            {
+                UId = HiSql.Snowflake.NextId().ToString(),
+                UserName = request.UserName,
+                GId = request.GId,
+                RId = request.RId,
+                Password = EncryptionUtility.EncryptSHA256(request.Password, hiSqlConfig.PwdSalt)
+            };
+            await this.sqlClient.Insert(userInfoTableName, userInfo).ExecCommandAsync();
+            return new AddUserResponse();
         }
 
         public async Task<ChangePasswordResponse> ChangePassword(ChangePasswordRequest request)

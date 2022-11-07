@@ -33,7 +33,7 @@ import {
   TableOperate,
   TranOperteItem,
 } from './request/tableData/tableDataTransactionOperate';
-import { tableDataQuery, tableDataTranOperate } from './tableDataAPIs';
+import { tableDataAdd, tableDataQuery, tableDataTranOperate } from './tableDataAPIs';
 
 export const apiError = `加载数据出错!`;
 const hiFieldMapTableName = `Hi_FieldMap`;
@@ -109,7 +109,7 @@ export const tableData = async <T = any>(reqeust: TableDataQueryRequest) => {
   return result;
 };
 
-const tabModelTableName = `Hi_TabModel`;
+export const tabModelTableName = `Hi_TabModel`;
 
 export class TablePropEntity {
   TabName = ``;
@@ -210,7 +210,6 @@ export const saveTableInfo = async (
   tabColumnStruct: ColumnStruct[],
   isView = false,
 ) => {
-  debugger;
   tabColumnStruct.forEach(r => {
     r.SNO_NUM = (r.SNO_NUM ?? '').trim();
     r.SNO = r.SNO.trim();
@@ -229,7 +228,7 @@ export const saveTableInfo = async (
   const req = new TableInfoSaveRequest(tabProps, tabColumnStruct);
   req.OPLevel = TableSaveOperateLevel.Execute;
   req.IsView = isView;
-  debugger;
+
   const resp = await serverApiClient.Post<ApiResultModel<TableInfoSaveResponse>>(
     `hidata/table/${tabProps.TabName}/save`,
     req,
@@ -313,14 +312,13 @@ export class HiFieldMapEntity {
  * @returns
  */
 export const getFieldMap = async (respId: string, type: FieldMapType) => {
-  return tableDataQuery<HiFieldMapEntity>(
-    hiFieldMapTableName,
-    {
+  return tableDataQuery<HiFieldMapEntity>(hiFieldMapTableName, {
+    where: {
       Type: type,
       ResId: respId,
     },
-    'FieldKey',
-  );
+    orderByField: 'FieldKey',
+  });
 };
 
 /**
@@ -362,4 +360,43 @@ export const saveFieldMap = async (
     }),
   );
   return tableDataTranOperate(req);
+};
+
+const hiViewExtTableName = `Hi_ViewExt`;
+
+/**
+ * 保存视图扩展信息
+ * @param viewName
+ * @param extData
+ * @returns
+ */
+export const saveTableViewExt = async (viewName: string, extData: Dictionary<string, any>) => {
+  const data: Dictionary<string, any> = {
+    ViewName: viewName,
+    DesignJson: JSON.stringify(extData),
+  };
+  return tableDataAdd(hiViewExtTableName, [data]);
+};
+
+/**
+ * 获取视图设计信息
+ * @param viewName
+ * @returns
+ */
+export const getTableViewDesign = async (viewName: string) => {
+  const data = await tableDataQuery<{
+    ViewName: string;
+    DesignJson: string;
+  }>(hiViewExtTableName, {
+    orderByField: 'ViewName',
+    where: {
+      ViewName: viewName,
+    },
+    fields: `ViewName,DesignJson`,
+  });
+  const [firstObj] = data.Data?.List ?? [];
+  if (!firstObj) {
+    return undefined;
+  }
+  return JSON.parse(firstObj.DesignJson) as Dictionary<string, any>;
 };

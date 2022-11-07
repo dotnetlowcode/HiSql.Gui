@@ -1,5 +1,5 @@
-import { Dictionary } from '@/helper/arrayHelper';
 import hljs from 'highlight.js';
+import { Dictionary } from '@/helper/arrayHelper';
 import { ApiTestExcute } from '@/serverApi/databaseAPIs';
 import { createTableView } from '@/serverApi/tableInfoAPIs';
 
@@ -38,6 +38,7 @@ export class TableViewAddViewModel {
     const result = await ApiTestExcute(this.Sql, param, {
       pageSize: this.Top,
       pageIndex: 1,
+      hiSqlparam: {},
     });
     this.setResultJson(result);
   }

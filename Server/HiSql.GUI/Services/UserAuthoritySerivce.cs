@@ -18,6 +18,18 @@ namespace HiSql.GUI.Services
         }
 
 
+        public async Task<string[]> HasAuth(string uId, string[] respIds)
+        {
+            var userAuthList = await hiUserInfoRepository.GetUserAuths(uId);
+            if (userAuthList.Any(r => r.UserRId == UserRoleConfig.SuperAdmin))
+            {
+                return respIds;
+            }
+            var resultRespIds = respIds.Intersect(userAuthList.Select(r => r.ResId));
+            return resultRespIds.ToArray();
+        }
+
+
 
         /// <summary>
         /// 判断用户是否有资源权限
@@ -40,6 +52,8 @@ namespace HiSql.GUI.Services
             }
             return false;
         }
+
+
 
     }
 }

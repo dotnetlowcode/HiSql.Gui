@@ -1,5 +1,6 @@
 import ApiResultModel from '@/serverApi/apiModels/apiResultModel';
 import serverApiClient from '@/serverApi/httpClient';
+import { AddUserRequest, AddUserResponse } from './addUserInfoRequest';
 import { ChangePasswordRequest, ChangePasswordResponse } from './changePasswordRequest';
 import { UserLoginRequest, UserLoginResponse } from './userLoginRequest';
 
@@ -28,6 +29,22 @@ export const changePassword = async (newPassword: string) => {
   req.NewPassword = newPassword;
   const url = `hidata/oauth/changePassword`;
   const resp = await serverApiClient.Post<ApiResultModel<ChangePasswordResponse>>(url, req, {
+    IsAuth: true,
+  });
+  if (resp.StatusCode === 0) {
+    return true;
+  }
+  throw resp.ErrorMessage;
+};
+
+/**
+ * 新建用户
+ * @param userInfo
+ * @returns
+ */
+export const addUserInfo = async (userInfo: AddUserRequest) => {
+  const url = `hidata/oauth/addUser`;
+  const resp = await serverApiClient.Post<ApiResultModel<AddUserResponse>>(url, userInfo, {
     IsAuth: true,
   });
   if (resp.StatusCode === 0) {

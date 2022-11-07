@@ -10,7 +10,10 @@ namespace HiSql.GUI.Framework.StaticFileHelper
 {
     public class ZipFileHelper
     {
-
+        static ZipFileHelper()
+        {
+            ZipConstants.DefaultCodePage = Encoding.UTF8.CodePage;
+        }
         /// <summary>
         /// 文件转ZIP
         /// </summary>

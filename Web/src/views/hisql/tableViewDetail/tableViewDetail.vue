@@ -3,7 +3,8 @@
     <a-tabs v-model:activeKey="activeKey">
       <a-tab-pane key="1" tab="视图结构">
         <authority-waper :res-id="tableName" :operate-id="`hiTable-tableStruct-query`">
-          <table-struct :is-view-api="true" :table-name="tableName" />
+          <!-- <table-struct :is-view-api="true" :table-name="tableName" /> -->
+          <ViewDesignV2 :view-name="tableName" />
           <template #accessDenied>
             <noPermission />
           </template>
@@ -42,6 +43,7 @@ import { useRoute } from 'vue-router';
 import tableData from '../../../components/tableData/tableData.vue';
 import tableApi from '../../../components/tableApiDoc/tableApiDoc.vue';
 import noPermissionVue from '@/components/authority/noPermission.vue';
+import ViewDesignV2 from '@/components/viewDesign/v2/viewDesignV2.vue';
 
 const route = useRoute();
 // const tableName = `Hi_FieldModel`; // `Hi_TabModel`;

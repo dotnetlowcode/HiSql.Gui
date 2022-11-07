@@ -50,7 +50,7 @@ namespace HiSql.GUI.Repository.HisSqlRepository
             var logObj = new HiTaskLogModel()
             {
                 CreateDate = DateTime.Now,
-                LogId = Guid.NewGuid().ToString(),
+                LogId = HiSql.Snowflake.NextId().ToString(),
                 ExcuteTime = excuteTime,
                 Message = message,
                 InnerMessage = innerMessage,

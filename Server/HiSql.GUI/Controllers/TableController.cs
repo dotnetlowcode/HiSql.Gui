@@ -4,6 +4,7 @@ using HiSql.GUI.ApiModes.Table;
 using HiSql.GUI.Framework;
 using HiSql.GUI.Services;
 using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HiSql.Gui.WebApi.Controllers
@@ -136,6 +137,14 @@ namespace HiSql.Gui.WebApi.Controllers
             return ApiResultModel.Success(data);
         }
 
+        [Route("hidata/table/getExcelColumn")]
+        [HttpPost]
+        [EnableCors("HiDataCors")]
+        public async Task<ApiResultModel<ExcelHiColumnResponse>> GetExcelColumn(IFormFile file)
+        {
+            var resp = await Service.GetExcelColumn(file);
+            return ApiResultModel.Success(resp);
+        }
 
     }
 }

@@ -2,17 +2,18 @@ import dayjs from 'dayjs';
 import { List } from 'linqts';
 import { createStore } from 'vuex';
 
+// eslint-disable-next-line prettier/prettier
 import {
   ExportTaskStatusCheckRequest,
 } from '@/serverApi/request/tableData/createExportTaskRequest';
 import { exportTaskStatusCheck } from '@/serverApi/tableDataAPIs';
 import bus from '@/utils';
 
+// eslint-disable-next-line prettier/prettier
 import {
   ExportTaskAddEvent,
   ExportTaskInfoModel,
 } from './model/exportTaskInfo';
-import pageSignStore from './model/pageSignStore';
 
 const localStorageKey = 'HiSql_GState';
 // 创建一个新的 store 实例
@@ -48,7 +49,6 @@ export const store = createStore<StoreType>({
       bus.emit(ExportTaskAddEvent);
     },
     clearOverTask: ctx => {
-      debugger;
       const removeItems = ctx.state.ExportTask.filter(r => r.Status === 200 || r.Status === 500);
       removeItems.forEach(r => {
         const i = ctx.state.ExportTask.indexOf(r);
@@ -65,7 +65,7 @@ export const store = createStore<StoreType>({
     // increment(state) {},
   },
   modules: {
-    pageSignStore,
+    // pageSignStore,
   },
 });
 class ServerTaskWatch {

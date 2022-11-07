@@ -35,14 +35,14 @@ export const saveTableTask = async (taskInfo: HiTaskEntity) => {
     const updateReulst = await tableDataUpdate(tableTaskTableName, taskInfo, {
       TaskId: taskInfo.TaskId,
     });
-    debugger;
+
     const isOK = (updateReulst.Data?.ModifyCount ?? 0) > 0;
     if (isOK) {
       await tableTaskStateSync([taskInfo.TaskId]);
     }
     return isOK;
   }
-  taskInfo.TaskId = StringHelper.genGuid();
+  taskInfo.TaskId = (await StringHelper.genSnowflakeid()).toString();
   const addResult = await tableDataAdd(tableTaskTableName, [taskInfo]);
   const addSuccess = (addResult.Data?.AddCount ?? 0) > 0;
   if (addSuccess) {
@@ -57,13 +57,12 @@ export const saveTableTask = async (taskInfo: HiTaskEntity) => {
  * @returns
  */
 export const getTableTask = async (taskId: string) => {
-  const queryResult = await tableDataQuery(
-    tableTaskTableName,
-    {
+  const queryResult = await tableDataQuery(tableTaskTableName, {
+    where: {
       TaskId: taskId,
     },
-    'TaskId',
-  );
+    orderByField: 'TaskId',
+  });
   const queryArray = queryResult.Data?.List ?? [];
   if (queryArray.length > 0) {
     return queryArray[0] as HiTaskEntity;
@@ -76,7 +75,10 @@ export const getTableTask = async (taskId: string) => {
  * @returns
  */
 export const getTableTaskList = async () => {
-  const queryResult = await tableDataQuery(tableTaskTableName, {}, 'TaskId');
+  const queryResult = await tableDataQuery(tableTaskTableName, {
+    where: {},
+    orderByField: 'TaskId',
+  });
   return (queryResult.Data?.List ?? []) as Array<HiTaskEntity>;
 };
 

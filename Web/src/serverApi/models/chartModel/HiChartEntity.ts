@@ -9,7 +9,8 @@ export type ChartTypeName =
   | 'Radar'
   | 'Scatter'
   | 'Parallel'
-  | 'Tree';
+  | 'Tree'
+  | 'Graph';
 
 export class HiChartEntity {
   /**

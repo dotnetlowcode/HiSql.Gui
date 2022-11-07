@@ -106,4 +106,9 @@ export const getSearchParamModel = (searchColumns: ColumnStruct[]) => {
   };
 };
 
-export type SearchFromVue = { Submit: () => void };
+export type SearchFromVue = {
+  Submit: () => {
+    whereSql: string;
+    whereParam: never[];
+  };
+};

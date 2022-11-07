@@ -4,6 +4,7 @@
     :size="size"
     :mode="isMultiValue ? `multiple` : undefined"
     placeholder="请选择..."
+    class="w-full"
     @change="changeValue"
   >
     <a-select-option
@@ -70,7 +71,7 @@ viewModel.loadData(props.columnStruct).then((datas: Array<{ [key: string]: any }
   // try {
   values = new List(`${columnValue.value}`.split(valueSplitText));
   // } catch (error) {
-  //   debugger;
+  //
   // }
   datas.forEach(dataItem => {
     const optionValue = `${dataItem[`${props.columnStruct.RefField}`]}`; // 值都转成String

@@ -1,11 +1,18 @@
 <template>
-  <a-range-picker v-if="isMultiValue" :show-time="showTime" @change="onChange" />
+  <a-range-picker
+    v-if="isMultiValue"
+    :show-time="showTime"
+    :picker="propPicker"
+    :locale="locale"
+    @change="onChange"
+  />
   <a-date-picker
     v-else
     v-model:value="dateValue"
     :size="size"
-    :picker="`date`"
+    :picker="propPicker"
     :show-time="showTime"
+    :locale="locale"
     placeholder="请输入..."
     @change="changeValue"
   />
@@ -13,22 +20,18 @@
 
 <script setup lang="ts">
 import dayjs, { Dayjs } from 'dayjs';
-import { PropType } from 'vue';
 
-const dateValue = ref<string | Dayjs>('');
+import { PropType } from 'vue';
+import 'dayjs/locale/zh-cn';
+
+import locale from 'ant-design-vue/es/date-picker/locale/zh_CN';
+
+dayjs.locale('zh-cn');
+
+const dateValue = ref<string | Dayjs | any>();
+
 const emit = defineEmits([`change`]);
-const changeValue = () => {
-  emit(`change`, dateValue.value);
-};
-const onChange = (value: Array<dayjs.Dayjs>) => {
-  if (value === null) {
-    emit(`change`, ``);
-    return;
-  }
-  const beginDate = value[0].format();
-  const endDate = value[1].format();
-  emit(`change`, `${beginDate},${endDate}`);
-};
+
 const props = defineProps({
   value: {
     type: String,
@@ -50,6 +53,32 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+
+  /**
+   * 日期维度  year-年  month-月   week-周  date-日   time-时间
+   */
+  propPicker: {
+    // eslint-disable-next-line no-undef
+    type: String as PropType<PickerMode | undefined>, // String as PropType<'year' | 'month' | 'week' | 'date' | 'second' | undefined>,
+    default: 'date',
+  },
 });
+
+const changeValue = () => {
+  // eslint-disable-next-line no-use-before-define
+  const dateValue2: any = dateValue.value.format();
+  emit(`change`, dateValue2);
+};
+
+const onChange = (value: Array<dayjs.Dayjs>) => {
+  if (value === null) {
+    emit(`change`, ``);
+    return;
+  }
+
+  const beginDate = value[0].format();
+  const endDate = value[1].format();
+  emit(`change`, `${beginDate},${endDate}`);
+};
 dateValue.value = props.value ? dayjs(props.value) : '';
 </script>

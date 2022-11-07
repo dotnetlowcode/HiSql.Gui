@@ -69,7 +69,7 @@ export default class EventController {
           }
           case 'edge:added': {
             this.graph.on('edge:added', ({ edge }) => {
-              debugger;
+
               // if (!this.x6BaseGraph.isDataDrivenUpdate) {
               //   event.handler && event.handler({ edge })
               // }
@@ -108,7 +108,7 @@ export default class EventController {
           }
           case 'node:click': {
             this.graph.on('node:click', ({ view }) => {
-              debugger;
+
               event.handler && event.handler({ node: view.cell });
             });
             break;

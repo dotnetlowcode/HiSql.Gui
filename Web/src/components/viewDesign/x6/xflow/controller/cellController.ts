@@ -136,7 +136,7 @@ export default class CellController {
     if (!source || !target) {
       throw new Error('edge must has source and target!');
     }
-    debugger;
+
     const newEdge: Edge = this.graph.addEdge({
       id: id || `${source}-${target}`,
       data: data || undefined,
@@ -185,7 +185,7 @@ export default class CellController {
    * @memberof CellController
    */
   public removeEdge(removeEdge: Edge | string) {
-    debugger;
+
     if (!removeEdge) {
       return;
     }

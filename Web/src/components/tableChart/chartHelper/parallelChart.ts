@@ -42,10 +42,15 @@ export class ParallelChart extends IChart {
       type?: string;
       data?: Array<string>;
     }> = [];
-    debugger;
+
+    if (groupFields.length < 2 || calcFields.length < 1) {
+      throw 'X维度需要至少2项，且Y数值不能为空';
+      // message.warning(`X维度需要至少2项，且Y数值不能为空`);
+      return;
+    }
     const xArray = [];
     const groupRowsMap = new List(rows).GroupBy(r => r[groupFields[0].fieldName]);
-    debugger;
+
     const groupRowsMap1 = new List(rows).GroupBy(r => r[groupFields[1].fieldName]);
     for (const key in groupRowsMap) {
       if (Object.prototype.hasOwnProperty.call(groupRowsMap, key)) {
@@ -123,7 +128,7 @@ export class ParallelChart extends IChart {
     //     // }
     //   }
     // }
-    debugger;
+
     const chartOption: EChartsOption = {
       parallelAxis: parallelAxis as any,
       // parallelAxis: [

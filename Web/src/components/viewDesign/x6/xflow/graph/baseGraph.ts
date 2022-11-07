@@ -60,7 +60,7 @@ export default class X6BaseGraph implements BaseGraph {
           ],
           distance: -40,
           onClick({ view }: any) {
-            debugger;
+
             self.graph.removeCell(view.cell);
             // self.cellController.removeEdge(view.cell.id);
           },

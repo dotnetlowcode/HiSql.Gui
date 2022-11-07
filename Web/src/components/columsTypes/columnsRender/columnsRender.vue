@@ -22,6 +22,7 @@ import hDate from '../hDate.vue';
 import hRefTable from '../hRefTable/hRefTable.vue';
 import whereTable from '../whereTable/whereTable.vue';
 import hDropDown from '../hDropDown/hDropDown.vue';
+import hTextCheck from '../textCheck.vue';
 
 const componentsMap: Map<HRenderType, any> = new Map();
 componentsMap.set(`hBool`, hBool);
@@ -31,6 +32,7 @@ componentsMap.set('hDate', hDate);
 componentsMap.set('hRefTable', hRefTable);
 componentsMap.set('whereTable', whereTable);
 componentsMap.set(`hDropDown`, hDropDown);
+componentsMap.set(`hTextCheck`, hTextCheck);
 
 const props = defineProps({
   param: {

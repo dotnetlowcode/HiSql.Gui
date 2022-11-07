@@ -199,6 +199,16 @@ export const saveDashboardInfo = async (dashboardInfo: HiChartDashboardEntity) =
   return false;
 };
 
+export const createDashboard = async (title: string) => {
+  const entity = new HiChartDashboardEntity();
+  entity.TableName = ``;
+  entity.CreateTime = new Date();
+  entity.ModiTime = new Date();
+  entity.Title = title;
+  await saveDashboardInfo(entity);
+  return entity;
+};
+
 export const getTableDashboard = async (tableName: string) => {
   let entity = await getDashboardInfo({
     tableName,
@@ -215,16 +225,13 @@ export const getTableDashboard = async (tableName: string) => {
 };
 
 export const getDashboardCharts = async (dashboardId: string) => {
-  const queryResult = await tableDataQuery(
-    hiChartTableName,
-    {
+  const queryResult = await tableDataQuery(hiChartTableName, {
+    where: {
       DBId: dashboardId,
     },
-    'DBId',
-    {
-      fields: 'ChartId,Position',
-    },
-  );
+    orderByField: 'DBId',
+    fields: 'ChartId,Position',
+  });
   const chartInfos = queryResult.Data?.List as Array<HiChartEntity>;
   const chartIds: Array<{
     ChartId: string;

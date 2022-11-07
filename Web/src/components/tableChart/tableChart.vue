@@ -2,11 +2,32 @@
   <div class="wrapPanel">
     <div class="topOperate">
       <div class="leftBtn">
+        <h-ref-table
+          v-if="!tableName"
+          :hide-select-value="true"
+          :column-struct="SelectTable"
+          :is-multi-value="false"
+          @change="
+                (tableName:string) => {
+                 viewModel.TempTableName=tableName;
+                 viewModel.ShowAddChart = true;
+                }
+              "
+        >
+          <a-button class="mr-10px">
+            <PlusCircleOutlined />
+            添加表
+          </a-button>
+        </h-ref-table>
         <a-button
-          v-if="viewModel.Dashboard.DBId"
+          v-else-if="viewModel.Dashboard.DBId"
           type="primary"
           class="mr-10px"
-          @click="viewModel.ShowAddChart = true"
+          @click="
+            () => {
+              viewModel.AddNewChart();
+            }
+          "
         >
           <hi-icon :icon-name="`icon-tianjia`"></hi-icon>
           添加图表
@@ -84,10 +105,10 @@
                   }
                 "
                 @full-show="
-  (charInfo: ChartDataModel) => {
-    viewModel.FullShow(charInfo);
-  }
-"
+                  charInfo => {
+                    viewModel.FullShow(charInfo);
+                  }
+                "
               />
             </GridItem>
           </GridLayout>
@@ -120,7 +141,7 @@
   >
     <chart-design
       ref="chartDesignObj"
-      :table-name="tableName"
+      :table-name="tableName || viewModel.TempTableName"
       :is-view-api="props.isViewApi"
       :db-id="viewModel.Dashboard.DBId"
       :chart-id="viewModel.EditChartId"
@@ -168,25 +189,29 @@ import { CheckOutlined } from '@ant-design/icons-vue';
 import { ChartSaveResult } from '@/serverApi/chartAPIs';
 import ChartShow from './chartShow/chartShow.vue';
 import { TableChartViewModel } from './tableChartViewModel';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ChartDataModel } from './chartHelper/ichart';
-import { ColumnStruct } from '@/serverApi/models/columnStruct';
+import { SelectTable } from '@/views/hisql/exportExcel/exportExcelViewModel';
 
 const props = defineProps({
   tableName: {
     type: String,
-    required: true,
+    required: false,
+    default: ``,
   },
   isViewApi: {
     type: Boolean,
     required: true,
     default: false,
   },
+  dashboardId: {
+    type: String,
+    required: false,
+    default: ``,
+  },
 });
 const chartDesignObj = ref<{
   Save: () => Promise<ChartSaveResult>;
 }>();
-const viewModel = reactive(new TableChartViewModel(props.tableName));
+const viewModel = reactive(new TableChartViewModel(props.tableName, props.dashboardId));
 // const tableFieldList = ref<Array<ColumnStruct>>([]);
 // 注入表格字段
 provide('TableFields', viewModel.TableFields);

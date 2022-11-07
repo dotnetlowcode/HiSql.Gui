@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 3229941 */
-  src: url('iconfont.woff2?t=1662521829128') format('woff2'),
-       url('iconfont.woff?t=1662521829128') format('woff'),
-       url('iconfont.ttf?t=1662521829128') format('truetype');
+  src: url('iconfont.woff2?t=1666943208864') format('woff2'),
+       url('iconfont.woff?t=1666943208864') format('woff'),
+       url('iconfont.ttf?t=1666943208864') format('truetype');
 }
 
 .iconfont {
@@ -11,6 +11,18 @@
   font-style: normal;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-left-join:before {
+  content: "\e752";
+}
+
+.icon-inner-join:before {
+  content: "\e760";
+}
+
+.icon-right-join:before {
+  content: "\ed9e";
 }
 
 .icon-a-HiSqlGUIICON_leida:before {

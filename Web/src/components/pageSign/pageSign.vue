@@ -1,7 +1,7 @@
 <template>
   <div class="ml-16px mr-16px mt-8px h-40px pageSign">
     <a-tabs
-      v-model:activeKey="store.getters.getCurrentTab().Id"
+      v-model:activeKey="pageSign.getCurrentTab().Id"
       type="editable-card"
       hide-add
       @tab-click="
@@ -10,11 +10,7 @@
         }
       "
     >
-      <a-tab-pane
-        v-for="(tab, tabIndex) in store.getters.getTabsMenues()"
-        :key="tab.Id"
-        :closable="false"
-      >
+      <a-tab-pane v-for="(tab, tabIndex) in tabsMenuesList" :key="tab.Id" :closable="false">
         <!-- :tab="tab.Name" -->
         <template #tab>
           <div class="pageSign-item" @contextmenu.prevent="openMoredBtn($event, tabIndex)">
@@ -45,9 +41,10 @@
 import { CloseCircleTwoTone } from '@ant-design/icons-vue';
 import router from '@/router';
 import { store } from '@/store';
-import { PageSignItem } from '@/store/model/pageSignStore';
 import { dataItem, LeftMenuViewModel, ModuleItem } from '@/components/leftMenu/leftMenuViewModel';
+import { pageSignPiniaStore, PageSignItem } from '@/store/pageSignPiniaStore';
 
+const pageSign = pageSignPiniaStore();
 // watch(
 //   () => router,
 //   v => {
@@ -81,22 +78,38 @@ const tabsHandles = ref([
     value: '5',
   },
 ]);
+debugger;
 const dropDownMenuBox = ref();
 const isShowDropDownMenu = ref(false);
 const handleTabIndex = ref(); // 删除操作选择的tab的索引
 const selectIndex = ref(0);
 const viewModel = reactive(new LeftMenuViewModel());
+
+const tabsMenuesList = ref();
+debugger;
+tabsMenuesList.value = pageSign.getTabsMenues('');
+debugger;
+
+watch(
+  () => pageSign.tabsMenues,
+  list => {
+    debugger;
+    tabsMenuesList.value = pageSign.getTabsMenues('');
+  },
+  { deep: true },
+);
+
 const emits = defineEmits([`update:param-list`]);
 const goPage = (params: PageSignItem) => {
   const obj = {
     Name: '',
     Id: '',
   } as dataItem;
-  obj.Name = params.Name;
-  obj.Id = params.Id;
+  obj.Name = params?.Name;
+  obj.Id = params?.Id;
   // const treeItem = params.Content;
   emits('update:param-list', obj);
-  if (obj.Name.indexOf('_新增') >= 0) {
+  if (obj.Name && obj.Name.indexOf('_新增') >= 0) {
     router.push({ name: obj.Id });
   }
   // else if (treeItem && treeItem.GoPage !== undefined) {
@@ -132,11 +145,13 @@ const closedcurrentTab = (event: any, tabIndex: number) => {
 // 点击切换页签
 const selectNav = (Id: string) => {
   isShowDropDownMenu.value = false;
-  const tabslist = store.getters.getTabsMenues();
+  // const tabslist = store.getters.getTabsMenues();
+  const tabslist: any = pageSign.getTabsMenues('');
   const i = tabslist.findIndex((x: { Id: any }) => x.Id === Id);
   if (i >= 0) {
     selectIndex.value = i;
-    store.commit('setCurrentTab', tabslist[i]);
+    // store.commit('setCurrentTab', tabslist[i]);
+    pageSign.setCurrentTab(pageSign.$state, tabslist[i]);
     // 点击页签跳转
     goPage(tabslist[i]);
   }
@@ -144,9 +159,13 @@ const selectNav = (Id: string) => {
 // 删除页签
 const removeTab = (_handleType: string) => {
   isShowDropDownMenu.value = false;
-  const hasTabs: Array<PageSignItem> = store.getters.getTabsMenues();
-  const handleTab = store.getters.getTabsMenues()[handleTabIndex.value];
-  const currentTab = store.getters.getCurrentTab();
+  // const hasTabs: Array<PageSignItem> = store.getters.getTabsMenues();
+  // const handleTab = store.getters.getTabsMenues()[handleTabIndex.value];
+  // const currentTab = store.getters.getCurrentTab();
+  const tabsMenues: any = pageSign.getTabsMenues('');
+  const hasTabs: any = tabsMenues;
+  const handleTab = tabsMenues[handleTabIndex.value];
+  const currentTab = pageSign.getCurrentTab();
   const currentTabIndex = hasTabs.findIndex(
     (t: { Id: any; Name: any }) => t.Id === currentTab.Id && t.Name === currentTab.Name,
   );
@@ -202,11 +221,14 @@ const removeTab = (_handleType: string) => {
     default:
       break;
   }
-  store.commit('removeTabs', colseTabs);
+  // store.commit('removeTabs', colseTabs);
+  pageSign.removeTabs(pageSign.$state, colseTabs);
   // 删除后自动设置默认选中页签
   if (removeAfterSelectTab !== null) {
-    store.commit('setCurrentTab', removeAfterSelectTab);
-    if (store.getters.getTabsMenues().length) {
+    // store.commit('setCurrentTab', removeAfterSelectTab);
+    pageSign.setCurrentTab(pageSign.$state, removeAfterSelectTab);
+    // if (store.getters.getTabsMenues().length) {
+    if (tabsMenues.length) {
       // selectId.value = removeAfterSelectTab.Id;
       // 点击页签跳转
       goPage(removeAfterSelectTab as PageSignItem);

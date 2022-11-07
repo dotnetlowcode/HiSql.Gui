@@ -1,6 +1,5 @@
 import * as echarts from 'echarts';
 import { EChartsOption } from 'echarts';
-import { List } from 'linqts';
 
 import { DataBaseType } from '@/components/columsTypes/fromEdit/fromEditViewModel';
 import { ColumnStruct } from '@/serverApi/models/columnStruct';
@@ -67,51 +66,55 @@ export class RadarChart extends IChart {
     }> = [];
     const dimensionsArray: Array<string> = [];
 
-    debugger;
-    const groupRowsMap = new List(rows).GroupBy(r => r[groupFields[0].fieldName]);
-    const groupRowsMap1 = new List(rows).GroupBy(r => r[groupFields[1].fieldName]);
     const columnList: Array<ColumnStruct> = [];
     let obj = {
       name: '',
       max: 0,
     };
+    if (calcFields.length < 3 || groupFields.length < 1) {
+      throw 'Y数值需要至少3项,且X维度不能为空';
+      // message.warning(`Y数值需要至少3项,且X维度不能为空`);
+      return;
+    }
     // this.PropValue = {};
-    if (!this.PropValue || JSON.stringify(this.PropValue) === '{}') {
+    if (
+      !this.PropValue ||
+      JSON.stringify(this.PropValue) === '{}' ||
+      dimensionsArray.length !== calcFields.length
+    ) {
       this.PropertyRenderFields = [];
       this.Property = [];
-      for (const key in groupRowsMap1) {
-        if (Object.prototype.hasOwnProperty.call(groupRowsMap1, key)) {
-          const titleProps = ColumnStruct.GetColumnStruct({
-            FieldName: `${key}_Title`,
-            FieldDesc: `标题`,
-            FieldType: DataBaseType.nvarchar,
-            IsRequire: true,
-            FieldLen: 20,
-          });
-          const targetProps = ColumnStruct.GetColumnStruct({
-            FieldName: `${key}_MaxValue`,
-            FieldDesc: `最大值`,
-            FieldType: DataBaseType.bigInt,
-            IsRequire: true,
-          });
-          columnList.push(titleProps, targetProps);
-        }
-      }
+      this.PropValue = {};
+      calcFields.forEach(item => {
+        const titleProps = ColumnStruct.GetColumnStruct({
+          FieldName: `${item.fieldName}_Title`,
+          FieldDesc: `标题`,
+          FieldType: DataBaseType.nvarchar,
+          IsRequire: true,
+          FieldLen: 20,
+        });
+        const targetProps = ColumnStruct.GetColumnStruct({
+          FieldName: `${item.fieldName}_MaxValue`,
+          FieldDesc: `最大值`,
+          FieldType: DataBaseType.bigInt,
+          IsRequire: true,
+        });
+        columnList.push(titleProps, targetProps);
+      });
       this.SetRenderFields(columnList);
     }
+
     // 给图标属性标题赋值
     for (const key in this.PropValue) {
       if (Object.prototype.hasOwnProperty.call(this.PropValue, key)) {
-        for (const key1 in groupRowsMap1) {
-          if (Object.prototype.hasOwnProperty.call(groupRowsMap1, key1)) {
-            if (key.indexOf(key1) === 0 && key.indexOf('_Title') >= 0) {
-              this.PropValue[key] = key1;
-            }
+        for (let index = 0; index < calcFields.length; index++) {
+          const element = calcFields[index];
+          if (key.indexOf(element.fieldName) === 0 && key.indexOf('_Title') >= 0) {
+            this.PropValue[key] = element.fieldName;
           }
-          if (Object.prototype.hasOwnProperty.call(groupRowsMap1, key1)) {
-            if (key.indexOf(key1) === 0 && key.indexOf('_MaxValue') >= 0) {
-              this.PropValue[key] = 50; // 默认初始给最大值
-            }
+
+          if (key.indexOf(element.fieldName) === 0 && key.indexOf('_MaxValue') >= 0) {
+            this.PropValue[key] = 100;
           }
         }
       }
@@ -122,7 +125,7 @@ export class RadarChart extends IChart {
       if (Object.prototype.hasOwnProperty.call(this.PropValue, key)) {
         if (key.indexOf('_Title') >= 0) {
           obj.name = this.PropValue[key];
-          obj.max = 0;
+          obj.max = 100;
           indicator.push(obj);
         }
       }
@@ -137,42 +140,33 @@ export class RadarChart extends IChart {
       }
     });
 
-    for (const key in groupRowsMap) {
-      if (Object.prototype.hasOwnProperty.call(groupRowsMap, key)) {
-        if (dimensionsArray.length > 5) {
-          break;
-        }
-        dimensionsArray.push(key);
-        if (groupRowsMap[key].length > 0) {
-          // eslint-disable-next-line no-loop-func
-          indicator.forEach(() => {
-            const valueArr: any[] = [];
-            if (indicator.length >= groupRowsMap[key].length) {
-              groupRowsMap[key].forEach(ele => {
-                valueArr.push(ele[calcFields[0].fieldName]);
-              });
-            } else {
-              groupRowsMap[key].forEach((ele, eleIndex: number) => {
-                if (eleIndex <= indicator.length) {
-                  valueArr.push(ele[calcFields[0].fieldName]);
-                }
-              });
-            }
-            // 排除重复添加
+    rows.forEach(item => {
+      for (const key in item) {
+        if (Object.prototype.hasOwnProperty.call(item, key)) {
+          if (key === groupFields[0].fieldName) {
+            // 排除重复添加;
             if (
               yArray.findIndex(r => {
                 return r.name === key;
               }) === -1
             ) {
               yArray.push({
-                name: key,
-                value: valueArr,
+                name: item[key],
+                value: [],
               });
+              dimensionsArray.push(item[key]);
             }
-          });
+          } else {
+            const valueArr: any[] = [];
+            calcFields.forEach(ele => {
+              valueArr.push(item[ele.fieldName]);
+            });
+            yArray[yArray.length - 1].value = valueArr;
+          }
         }
       }
-    }
+    });
+
     // 映射转化
     indicator = this.TranslateObj(indicator);
     const chartOption: EChartsOption = {

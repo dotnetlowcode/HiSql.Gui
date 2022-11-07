@@ -37,7 +37,7 @@ nextTick(() => {
     //   {
     //     eventName: `node:click`,
     //     handler: (e: any) => {
-    //       debugger;
+    //
     //       const viewJson = viewModel.save();
     //       emits(`viewJsonChange`, viewJson);
     //     },

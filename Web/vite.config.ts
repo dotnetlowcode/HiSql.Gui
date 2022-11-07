@@ -6,12 +6,14 @@ import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import OptimizationPersist from 'vite-plugin-optimize-persist';
 import { AntDesignVueResolver } from 'unplugin-vue-components/resolvers';
-import vueJsx from '@vitejs/plugin-vue-jsx'
+import vueJsx from '@vitejs/plugin-vue-jsx';
 import WindiCSS from 'vite-plugin-windicss';
+import visualizer from 'rollup-plugin-visualizer';
+import vueSetupExtend from 'vite-plugin-vue-setup-extend'
 
-let basePath = "./";
-if (process.env.APP_ENV == "production") {
-  basePath = "./";//如果有CDN可以配置CND路径,如:`http://cnd.aliyun.com/app/`
+let basePath = './';
+if (process.env.APP_ENV == 'production') {
+  basePath = './'; //如果有CDN可以配置CND路径,如:`http://cnd.aliyun.com/app/`
 }
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -23,10 +25,11 @@ export default defineConfig({
     PKG: JSON.stringify(pkg.dependencies),
   },
   plugins: [
+    vue(),
+    vueSetupExtend(),
     vueJsx({
       // options are passed on to @vue/babel-plugin-jsx
     }),
-    vue(),
     WindiCSS(),
     AutoImport({
       dts: 'src/auto-imports.d.ts',
@@ -46,6 +49,11 @@ export default defineConfig({
     }),
     PkgConfig(),
     OptimizationPersist(),
+    visualizer({
+      open: true, //注意这里要设置为true，否则无效
+      gzipSize: true,
+      brotliSize: true,
+    }),
   ],
   resolve: {
     alias: [
@@ -55,8 +63,8 @@ export default defineConfig({
       },
       {
         find: '@',
-        replacement: `/src/`
-      }
+        replacement: `/src/`,
+      },
     ],
   },
   css: {
@@ -73,5 +81,17 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['@ant-design/icons-vue', 'ant-design-vue'],
+  },
+  build: {
+    rollupOptions: {
+      treeshake: false,
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return id.toString().split('node_modules/')[1].split('/')[0].toString();
+          }
+        },
+      },
+    },
   },
 });

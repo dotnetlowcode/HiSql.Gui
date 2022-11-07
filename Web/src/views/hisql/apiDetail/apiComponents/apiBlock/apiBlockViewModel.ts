@@ -1,7 +1,7 @@
-import { Dictionary } from '@/helper/arrayHelper';
 import hljs from 'highlight.js';
 import { Random } from 'mockjs';
 import { List } from 'linqts';
+import { Dictionary } from '@/helper/arrayHelper';
 import { HiApiBlockEntity } from '@/serverApi/models/tableModel/hiApiBlockEntity';
 import { HiApiParamEntity, ParamFieldType } from '@/serverApi/models/tableModel/hiApiFields';
 import { ApiTestExcute } from '@/serverApi/databaseAPIs';
@@ -74,7 +74,9 @@ export class ApiBlockViewModel {
     this.ApiInParamList.forEach(f => {
       param[f.Title] = f.DemoValue;
     });
-    const result = await ApiTestExcute(this.BlockObj.Sql, param);
+    const result = await ApiTestExcute(this.BlockObj.Sql, param, {
+      hiSqlparam: {},
+    });
     const rows = result.Data?.List ?? [];
     this.setResultJson(result);
     if (result.Data && rows.length > 1) {

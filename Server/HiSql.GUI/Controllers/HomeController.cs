@@ -1,4 +1,5 @@
 ﻿using HiSql.GUI.Framework.WebApi;
+using HiSql.GUI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.NodeServices;
 using System;
@@ -24,7 +25,7 @@ namespace HiSql.GUI.Controllers
         [HttpGet]
         public async Task<ApiResultModel<string>> Index()
         {
-            await this.hiSqlClient.CodeFirst.InstallHisql();
+            this.hiSqlClient.CodeFirst.InstallHisql();
             return ApiResultModel.Success("OK");
         }
 
@@ -36,6 +37,8 @@ namespace HiSql.GUI.Controllers
             //{
             //    Name = "KKK"
             //}));
+            //
+            // await TableService.CreateTable(hiSqlClient, "退款管理", @"C:\Users\cw\Downloads\退款管理_.xlsx");
             throw new ApiResultExection("一个故意的异常!", 300, 403);
         }
 

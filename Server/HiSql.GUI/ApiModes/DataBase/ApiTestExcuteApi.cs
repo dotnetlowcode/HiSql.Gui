@@ -16,7 +16,21 @@ namespace HiSql.GUI.ApiModes.DataBase
         public int PageSize { get; set; }
 
         public int PageIndex { get; set; }
-        public string? OrderByField { get; internal set; }
+
+        public string? OrderByField { get; set; }
+
+
+        /// <summary>
+        /// hiSqlWhere条件SQL
+        /// </summary>
+
+        public string HiSqlWhere { get; set; }
+
+        /// <summary>
+        /// hiSqlWhere条件参数
+        /// </summary>
+        public Dictionary<string, object> HiSqlWhereParam { get; set; }
+
     }
 
     public class ApiTestExcuteResponse

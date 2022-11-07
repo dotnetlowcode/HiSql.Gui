@@ -1,6 +1,6 @@
-import { Dictionary } from '@/helper/arrayHelper';
 import dayjs from 'dayjs';
 import { reactive } from 'vue';
+import { Dictionary } from '@/helper/arrayHelper';
 import { HiAuthorityAPIs } from '@/serverApi/hiAuthorityAPIs';
 
 export const userAuthList = reactive<Dictionary<string, Array<string>>>({});
@@ -12,6 +12,8 @@ export const userRole = reactive<Dictionary<string, string>>({});
  */
 export const superAdmin = 'superAdmin';
 
+let lastRefFlag: Date | undefined;
+
 /**
  * 清空用户权限
  */
@@ -19,9 +21,8 @@ export const clearUserAuth = async () => {
   Object.keys(userAuthList).forEach(key => {
     delete userAuthList[key];
   });
+  lastRefFlag = undefined;
 };
-
-let lastRefFlag: Date | undefined;
 
 /**
  * 刷新用户权限

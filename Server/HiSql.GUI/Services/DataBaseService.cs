@@ -16,19 +16,24 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
 using HiSql.GUI.Helper;
 using HiSql.GUI.ApiModes.Oauth;
+using HiSql.GUI.Services;
 
 namespace HiSql.GUI
 {
-    public class DataBaseService : ITransient
+    public class DataBaseService : ServiceBase, ITransient
     {
         private readonly HiSqlClient sqlClient;
 
         private readonly IHiApiRepository hiApiRepository;
 
-        public DataBaseService(HiSqlClient hiSqlClient, IHiApiRepository _hiApiRepository)
+        private readonly UserAuthoritySerivce userAuthoritySerivce;
+
+        public DataBaseService(IHttpContextAccessor httpContextAccessor, HiSqlClient hiSqlClient, IHiApiRepository _hiApiRepository, UserAuthoritySerivce _userAuthoritySerivce)
+           : base(httpContextAccessor, hiSqlClient)
         {
             sqlClient = hiSqlClient;
             hiApiRepository = _hiApiRepository;
+            userAuthoritySerivce = _userAuthoritySerivce;
         }
 
         public async Task<GetTablesResponse> GetTables(GetTablesRequest request)
@@ -42,6 +47,10 @@ namespace HiSql.GUI
             {
                 tables.AddRange(sqlClient.DbFirst.GetViews());
             }
+            var tableNames = tables.Select(x => x.TabName).ToArray();
+            var userInfo = this.TokenInfo;
+            tableNames = await userAuthoritySerivce.HasAuth(userInfo.UId, tableNames.ToArray());
+            tables = tables.Where(r => tableNames.Contains(r.TabName)).ToList();
             return new GetTablesResponse
             {
                 List = tables
@@ -53,6 +62,13 @@ namespace HiSql.GUI
             var hisql = request.HiSql;
             var resp = new ApiTestExcuteResponse();
             var hiSqlParam = request.Params?.ToDictionary(x => $"{x.Key}", x => x.Value as object) ?? new Dictionary<string, object>();
+            if (request.HiSqlWhereParam?.Keys.Count > 0)
+            {
+                foreach (var sqlParamKey in request.HiSqlWhereParam.Keys)
+                {
+                    hiSqlParam[sqlParamKey] = request.HiSqlWhereParam[sqlParamKey];
+                }
+            }
             if (hiSqlParam.ContainsKey("LoginUId"))
             {
                 hiSqlParam["LoginUId"] = loginUser.UId;
@@ -68,6 +84,7 @@ namespace HiSql.GUI
                 }
             }
             hisql = hisql.Replace("$Where$ ", string.Empty);//去除无用Where占位
+
             IQuery query = (!genWhereSql && hiSqlParam?.Count > 0) ? sqlClient.HiSql(hisql, hiSqlParam) : sqlClient.HiSql(hisql);
             if (request.PageIndex >= 0)
             {
@@ -84,6 +101,7 @@ namespace HiSql.GUI
             {
                 resp.List = await query.ToEObjectAsync();
             }
+            var k = resp.List.ToJson();
             return resp;
         }
 
@@ -97,9 +115,10 @@ namespace HiSql.GUI
         public async Task<DataBaseVersionResponse> GetDBVersion(DataBaseVersionRequest request)
         {
             var versionObj = sqlClient.Context.DMTab.DBVersion();
-            return new DataBaseVersionResponse {
-               Version=$"{sqlClient.CurrentConnectionConfig.DbType} 版本号：{versionObj.Version.ToString()}",
-               VersionDesc=$"版本描述：{versionObj.VersionDesc}",
+            return new DataBaseVersionResponse
+            {
+                Version = $"{sqlClient.CurrentConnectionConfig.DbType} 版本号：{versionObj.Version.ToString()}",
+                VersionDesc = $"版本描述：{versionObj.VersionDesc}",
             };
         }
 

@@ -110,28 +110,60 @@ export class ColumnStruct {
    */
   IsRefTab = false;
 
+  /**
+   * 引用表名
+   */
   RefTab = ``;
 
+  /**
+   * 引用表外联字段
+   */
   RefField = ``;
 
+  /**
+   * 引用表显示字段
+   */
   RefFields = ``;
 
+  /**
+   * 引用表显示字段的描述
+   */
   RefFieldDesc = ``;
 
+  /**
+   * 引用表描述
+   */
   RefWhere = ``;
 
+  /**
+   * 创建时间
+   */
   CreateTime = ``;
 
+  /**
+   * 创建人
+   */
   CreateName = ``;
 
+  /**
+   * 修改时间
+   */
   ModiTime = ``;
 
+  /**
+   * 修改人
+   */
   ModiName = ``;
 
   /**
    * 日期精度
    */
   DateAccurate = ``;
+
+  /**
+   * 是否筛选文本
+   */
+  IsHTextCheck: boolean | undefined;
 }
 
 export const fieldSortFun = (a: ColumnStruct, b: ColumnStruct) => {

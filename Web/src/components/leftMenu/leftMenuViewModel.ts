@@ -1,4 +1,4 @@
-import { List } from 'linqts';
+﻿import { List } from 'linqts';
 import { Router } from 'vue-router';
 
 import {
@@ -7,10 +7,13 @@ import {
   addTableRouterName,
   addTableTaskRouterName,
   addViewTableRouterName,
+  dashboardAdd,
+  dashboardDetail,
 } from '@/router';
 import { getApiList, getTables } from '@/serverApi/databaseAPIs';
 import { GetExcelExportTemplateList } from '@/serverApi/request/excelExport/hiExcelExportAPIs';
 import { getTableTaskList } from '@/serverApi/request/hiTask/hiTableTaskAPIs';
+import { HiDashboardAPIs } from '@/serverApi/hiDashboardAPIs';
 
 export class SelectItemType {
   Id?: string;
@@ -79,7 +82,7 @@ export class ModuleItem {
   };
 
   SearchFun: searchFun = () => {
-    debugger;
+
     const self = this as ModuleItem;
     const key = this.SearchKey.toLowerCase();
     if (key === ``) {
@@ -105,6 +108,7 @@ export class LeftMenuViewModel {
     // this.initCharts();
     this.intTableTask();
     this.initExcelTemplate();
+    this.initDashBoard();
     if (this.TreeDatas.length < 1) {
       return;
     }
@@ -303,7 +307,6 @@ export class LeftMenuViewModel {
             .ToArray();
         },
         (route, dItem) => {
-          debugger;
           route.push({
             name: `editExportExcel`,
             params: {
@@ -327,20 +330,47 @@ export class LeftMenuViewModel {
     );
   }
 
-  // private initCharts() {
-  //   this.TreeDatas.push(
-  //     new ModuleItem(
-  //       '图表',
-  //       async () => {
-  //         return [];
-  //       },
-  //       () => {},
-  //     ),
-  //   );
-  // }
+  private initDashBoard() {
+    this.TreeDatas.push(
+      new ModuleItem(
+        '数据看板',
+        async () => {
+          const result = await HiDashboardAPIs.getDashboardList();
+          return new List(result)
+            .Select(obj => {
+              return {
+                Name: obj.Title,
+                Id: obj.DBId,
+              };
+            })
+            .ToArray();
+        },
+        (route, dItem) => {
+          route.push({
+            name: dashboardDetail,
+            params: {
+              id: dItem.Id,
+            },
+          });
+        },
+        dashboardAdd,
+        'icon--_kanban',
+        {
+          Add: {
+            ResId: `Hi_Dashboard`,
+            OperateId: `hiDashboard-list-add`,
+          },
+          Delete: {
+            ResId: `Hi_Dashboard`,
+            OperateId: `hiDashboard-list-delete`,
+          },
+        },
+      ),
+    );
+  }
 
   search(item: ModuleItem) {
-    debugger;
+
     const resultItems = item.SearchFun();
     item.FilterData.splice(0);
     if (resultItems.length > 0) {

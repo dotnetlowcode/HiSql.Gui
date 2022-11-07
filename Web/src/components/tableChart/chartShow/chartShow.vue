@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="chartShow" :class="{ hideHeader: isFullShow }">
     <div class="chartHeader">
       <span class="chartTitle" v-text="viewModel.charInfo.Title"></span>
@@ -58,9 +58,9 @@
 <script lang="ts" setup>
 import ExclamationCircleOutlined from '@ant-design/icons-vue/lib/icons/ExclamationCircleOutlined';
 import { Modal } from 'ant-design-vue';
-import { Dictionary } from '@/helper/arrayHelper';
-import { createVNode, Ref } from 'vue';
+import { createVNode } from 'vue';
 import { CheckOutlined } from '@ant-design/icons-vue';
+import { Dictionary } from '@/helper/arrayHelper';
 import { ColumnStruct } from '@/serverApi/models/columnStruct';
 import { ChartShowViewModel, ChartShowVue } from './chartShowViewModel';
 import { getSearchColumns, searchParamToWhereJson } from '@/serverApi/dataHelper';
@@ -162,6 +162,7 @@ defineExpose<ChartShowVue>({
 
     .chartOperateItems {
       display: flex;
+      visibility: hidden;
     }
 
     .operateItem {
@@ -181,6 +182,12 @@ defineExpose<ChartShowVue>({
     height: calc(100% - @headerHeight);
     padding: 0 20px 0 20px;
     overflow: hidden;
+  }
+}
+
+.chartShow:hover {
+  .chartOperateItems {
+    visibility: visible;
   }
 }
 

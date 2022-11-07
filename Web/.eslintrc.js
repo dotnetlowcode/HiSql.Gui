@@ -20,6 +20,7 @@ module.exports = {
   plugins: ['vue', '@typescript-eslint'],
   rules: {
     // all rules docs https://eslint.org/docs/rules/
+    '@typescript-eslint/no-inferrable-types': 'off',
     'vue/multi-word-component-names': 'off',
     'vue/no-v-html': 'off',
     'vue/v-on-event-hyphenation': 'off',

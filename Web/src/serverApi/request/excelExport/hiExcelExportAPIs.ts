@@ -154,15 +154,12 @@ export const GetExcelExportTemplateList = async (fields = 'TemplateId,Title') =>
   req.Fields = ``;
   req.OrderByField = 'CreateTime';
   req.TableName = HiExcelExportTemplateTableName;
-  const resp = await tableDataQuery<HiExcelExportTemplateEntity>(
-    HiExcelExportTemplateTableName,
-    {},
-    'CreateTime',
-    {
-      fields,
-      pageIndex: -1,
-      pageSize: -1,
-    },
-  );
+  const resp = await tableDataQuery<HiExcelExportTemplateEntity>(HiExcelExportTemplateTableName, {
+    where: {},
+    orderByField: 'CreateTime',
+    fields,
+    pageIndex: -1,
+    pageSize: -1,
+  });
   return resp.Data?.List ?? [];
 };

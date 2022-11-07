@@ -35,7 +35,7 @@ export class GraphHelper {
         }
         continue;
       }
-      debugger;
+
       if (!tabMap[source.cell] && !tabMap[target.cell]) {
         tabMap[source.cell] = true;
         tabMap[target.cell] = true;

@@ -98,6 +98,7 @@ const save = () => {
   viewModel.IsLoad = true;
   viewModel
     .SaveTableView()
+
     .then(isOK => {
       if (isOK) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

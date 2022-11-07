@@ -34,7 +34,7 @@ viewModel.init(props.refConfig);
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const selectChange = () => {
   const { valueStr, textStr } = viewModel.getSelectValue();
-  debugger;
+
 
   let newValueStr = '';
   let newTextStr = '';

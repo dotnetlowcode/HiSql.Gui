@@ -2,21 +2,11 @@ import { List } from 'linqts';
 
 import { SearchFromVue } from '@/components/columsTypes/searchFrom/searchFromViewModel';
 import { Dictionary } from '@/helper/arrayHelper';
-import {
-  deleteChartInfo,
-  getChartInfo,
-} from '@/serverApi/chartAPIs';
+import { deleteChartInfo, getChartInfo } from '@/serverApi/chartAPIs';
 import { getFieldMap } from '@/serverApi/tableInfoAPIs';
 
-import {
-  DsmList,
-  HiChartFieldEntityToDimensionField,
-} from '../chartDesign/chartDesignViewModel';
-import {
-  ChartDataModel,
-  GetIChart,
-  IChart,
-} from '../chartHelper/ichart';
+import { DsmList, HiChartFieldEntityToDimensionField } from '../chartDesign/chartDesignViewModel';
+import { ChartDataModel, GetIChart, IChart } from '../chartHelper/ichart';
 
 export class ChartShowViewModel {
   charInfo: ChartDataModel = new ChartDataModel();

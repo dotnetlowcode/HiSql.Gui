@@ -1,3 +1,7 @@
+import { List } from 'linqts';
+
+import { Dictionary } from '@/helper/arrayHelper';
+
 import ApiResultModel from './apiModels/apiResultModel';
 import serverApiClient from './httpClient';
 import { TableDataAddRequest, TableDataDeleteRequest } from './request';
@@ -93,9 +97,23 @@ export const tableDataUpdate = async (
  */
 export const tableDataQuery = async <T = any>(
   tableName: string,
-  where: { [key: string]: any },
-  orderByField: string,
-  option?: {
+
+  option: {
+    /**
+     * 筛选条件
+     */
+    where: Dictionary<string, any>;
+
+    whereParam?: Dictionary<string, any>;
+
+    hisqlWhere?: string;
+
+    hisqlParam?: Dictionary<string, any>;
+
+    /**
+     * 排序字段
+     */
+    orderByField: string;
     /**
      * 要查询的字段
      */
@@ -108,15 +126,22 @@ export const tableDataQuery = async <T = any>(
      * 页大小上限为50
      */
     pageSize?: number;
+    /**
+     * 是否去重
+     */
+    distinct?: boolean;
   },
 ) => {
   const req = new TableDataQueryRequest();
   req.TableName = tableName;
-  req.Fields = option?.fields ?? `*`;
-  req.PageIndex = option?.pageIndex ?? 1;
-  req.PageSize = option?.pageSize ?? 30;
-  req.OrderByField = orderByField;
-  req.WhereJson = where;
+  req.Fields = option.fields ?? `*`;
+  req.PageIndex = option.pageIndex ?? 1;
+  req.PageSize = option.pageSize ?? 30;
+  req.OrderByField = option.orderByField;
+  req.WhereJson = option.where;
+  req.HiSqlWhere = option.hisqlWhere ?? ``;
+  req.HiSqlWhereParam = option.hisqlParam ?? {};
+  req.Distinct = option.distinct ?? false;
   const url = `hidata/api/data/${tableName}/query`;
   return serverApiClient.Post<ApiResultModel<TableDataQueryResponse<T>>>(url, req, {
     IsAuth: false,
@@ -169,4 +194,32 @@ export const exportTaskStatusCheck = async (req: ExportTaskStatusCheckRequest) =
   return serverApiClient.Post<ApiResultModel<ExportTaskStatusCheckResponse>>(url, req, {
     IsAuth: false,
   });
+};
+
+export const queryTableField = async (
+  tableName: string,
+  fieldName: string,
+  key: string,
+  top: number = 10,
+) => {
+  console.log(top);
+  const req = new TableDataQueryRequest();
+  req.Fields = fieldName;
+  req.HiSqlWhere = `${fieldName} like @${fieldName}`;
+  req.HiSqlWhereParam[fieldName] = `%${key}%`;
+  req.PageSize = top;
+  req.PageIndex = -1;
+  req.Distinct = true; // 去重
+  const result = await tableDataQuery(tableName, {
+    where: {},
+    hisqlWhere: req.HiSqlWhere,
+    hisqlParam: req.HiSqlWhereParam,
+    orderByField: fieldName,
+    fields: fieldName,
+    distinct: req.Distinct,
+    pageSize: req.PageSize,
+    pageIndex: req.PageIndex,
+  });
+  const groups = new List(result.Data?.List ?? []).GroupBy(r => r[fieldName]);
+  return Object.keys(groups);
 };

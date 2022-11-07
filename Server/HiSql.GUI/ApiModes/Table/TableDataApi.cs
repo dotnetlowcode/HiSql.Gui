@@ -44,7 +44,7 @@ namespace HiSql.GUI.ApiModes
         /// <summary>
         /// hiSqlWhere条件参数
         /// </summary>
-        public Dictionary<string, string> HiSqlWhereParam { get; set; }
+        public Dictionary<string, object> HiSqlWhereParam { get; set; }
 
     }
 

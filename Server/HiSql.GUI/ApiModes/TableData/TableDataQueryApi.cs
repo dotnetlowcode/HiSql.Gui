@@ -50,6 +50,11 @@ namespace HiSql.GUI.ApiModes
         /// hiSqlWhere条件参数
         /// </summary>
         public Dictionary<string, string> HiSqlWhereParam { get; set; }
+
+        /// <summary>
+        /// 是否去重
+        /// </summary>
+        public bool Distinct { get; set; }
     }
 
 

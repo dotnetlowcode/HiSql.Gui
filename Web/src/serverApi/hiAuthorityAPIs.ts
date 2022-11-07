@@ -45,16 +45,13 @@ export class HiAuthorityAPIs {
       RefTextField: string;
       RefField: string;
       RefWhere: string;
-    }>(
-      HiModuleTableName,
-      {
+    }>(HiModuleTableName, {
+      where: {
         ParentId: ``,
       },
-      'MId',
-      {
-        fields: 'MId,ParentId,Name,RefTab,RefTextField,RefField,RefWhere',
-      },
-    );
+      orderByField: 'MId',
+      fields: 'MId,ParentId,Name,RefTab,RefTextField,RefField,RefWhere',
+    });
     return result.Data?.List ?? [];
   }
 
@@ -65,16 +62,14 @@ export class HiAuthorityAPIs {
    * @returns
    */
   static async loadRoleResList(roleId: string, moduleId: string) {
-    debugger;
-    const result = await tableDataQuery<RoleSimpleAuth>(
-      HiRoleModuleMapTableName,
-      {
+    const result = await tableDataQuery<RoleSimpleAuth>(HiRoleModuleMapTableName, {
+      where: {
         RId: roleId,
         MId: moduleId,
       },
-      'ResId',
-      { fields: 'ResId,RefValueText,RefValues' },
-    );
+      orderByField: 'ResId',
+      fields: 'ResId,RefValueText,RefValues',
+    });
     return result.Data?.List ?? [];
   }
 
@@ -92,16 +87,13 @@ export class HiAuthorityAPIs {
       RefTextField: string;
       RefField: string;
       RefWhere: string;
-    }>(
-      HiModuleTableName,
-      {
+    }>(HiModuleTableName, {
+      where: {
         ParentId: moduleId,
       },
-      'MId',
-      {
-        fields: 'MId,ParentId,Name,RefTab,RefTextField,RefField,RefWhere',
-      },
-    );
+      orderByField: 'MId',
+      fields: 'MId,ParentId,Name,RefTab,RefTextField,RefField,RefWhere',
+    });
     return result.Data?.List ?? [];
   }
 
@@ -188,7 +180,9 @@ export class HiAuthorityAPIs {
     const result = await tableDataQuery<{
       RId: string;
       Name: string;
-    }>(HiRoleTableName, {}, 'RId', {
+    }>(HiRoleTableName, {
+      where: {},
+      orderByField: 'RId',
       fields: 'RId,Name',
     });
     return result.Data?.List ?? [];

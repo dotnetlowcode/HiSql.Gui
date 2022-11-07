@@ -1,39 +1,38 @@
-import { ModuleItem } from '@/components/leftMenu/leftMenuViewModel';
 import router from '@/router';
 
 import { store } from '..';
 
-export class PageSignItem {
-  /**
-   * 类型
-   */
-  Type = '';
+// export class PageSignItem {
+//   /**
+//    * 类型
+//    */
+//   Type = '';
 
-  /**
-   * 内容
-   */
-  Content: ModuleItem | undefined;
+//   /**
+//    * 内容
+//    */
+//   Content: ModuleItem | undefined;
 
-  /**
-   * Name
-   */
-  Name = '';
+//   /**
+//    * Name
+//    */
+//   Name = '';
 
-  /**
-   * Id
-   */
-  Id = '';
+//   /**
+//    * Id
+//    */
+//   Id = '';
 
-  /**
-   * 是否显示删除按钮
-   */
-  Closable = false;
+//   /**
+//    * 是否显示删除按钮
+//    */
+//   Closable = false;
 
-  /**
-   * 缓存数据
-   */
-  Data!: any;
-}
+//   /**
+//    * 缓存数据
+//    */
+//   Data!: any;
+// }
 
 /* eslint-disable prettier/prettier */
 const pageSignStore = {
@@ -143,6 +142,24 @@ const pageSignStore = {
     setCurrentMenuType(state: { currentMenuType: string }, value: string) {
       state.currentMenuType = value;
       // localStorage.setItem(`${window.location.origin}_currentMenuType`, value);
+    },
+    /**
+     * 清除最后一个Tab
+     * @param state
+     * @param value
+     */
+    removeLastTab(
+      state: {
+        currentMenuType: string;
+        tabsMenues: Array<PageSignItem>;
+      },
+      value: any,
+    ) {
+      const tabList = state.tabsMenues.filter(r => r.Type === state.currentMenuType);
+      if (tabList.length > 0) {
+        const lastObj = tabList[tabList.length - 1];
+        state.tabsMenues.splice(state.tabsMenues.indexOf(lastObj), 1);
+      }
     },
   },
 

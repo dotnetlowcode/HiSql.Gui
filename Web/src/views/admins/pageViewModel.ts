@@ -14,7 +14,7 @@ export class PageViewModel {
 
   async Save() {
     const modules = this.dataYml.split(`\n\n`);
-    // debugger;
+    //
     let i = 0;
     const tableNames: Array<RoleTables> = [
       `Hi_Group`,
@@ -51,7 +51,7 @@ export class PageViewModel {
       if (id === '') {
         objKey = null;
       }
-      // debugger;
+      //
       switch (tableName as RoleTables) {
         case 'Hi_Module':
           if (rootModuleId === '') {

@@ -63,7 +63,7 @@ namespace HiSql.GUI
 
                                 if (lstdyn.Count > 0 && !hasgui)
                                 { 
-                                    sqlClient.Modi(_tabname, lstdyn).ExecCommand();
+                                    //sqlClient.Modi(_tabname, lstdyn).ExecCommand();
 
                                     Console.WriteLine($"HiSql.GUI系统表[{_tabname}] 数据初始化成功...");
                                 }

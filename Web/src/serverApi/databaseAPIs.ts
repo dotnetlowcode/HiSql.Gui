@@ -12,6 +12,10 @@ import {
   hiApiTableName,
 } from './models/tableModel/hiApiModel';
 import {
+  ApiGetSnowflakeIdRequest,
+  ApiGetSnowflakeIdResponse,
+} from './request/database/apiGetSnowflakeIdRequest';
+import {
   ApiTestExcuteRequest,
   ApiTestExcuteResponse,
 } from './request/database/ApiTestExcuteRequest';
@@ -65,6 +69,7 @@ export const ApiTestExcute = async (
     pageSize?: number;
     pageIndex?: number;
     orderBy?: Dictionary<string, 1 | -1>;
+    hiSqlparam: Dictionary<string, any>;
   },
 ) => {
   const req = new ApiTestExcuteRequest();
@@ -72,6 +77,7 @@ export const ApiTestExcute = async (
   req.Params = params;
   req.PageSize = option?.pageSize ?? 0;
   req.PageIndex = option?.pageIndex ?? -1;
+  req.HiSqlWhereParam = option?.hiSqlparam ?? {};
   req.OrderByField;
   const resp = await serverApiClient.Post<ApiResultModel<ApiTestExcuteResponse>>(
     `hidata/database/apitestexcute`,
@@ -222,4 +228,21 @@ export const getDatabaseVersion = async () => {
     },
   );
   return resp;
+};
+
+/**
+ * 获取雪花Id
+ * @param count
+ * @returns
+ */
+export const getSnowflakeId = async (count = 1) => {
+  const req = new ApiGetSnowflakeIdRequest(count);
+  const resp = await serverApiClient.Post<ApiResultModel<ApiGetSnowflakeIdResponse>>(
+    'hidata/getSnowflakeId',
+    req,
+    {
+      IsAuth: true,
+    },
+  );
+  return resp.Data?.SnowflakeIds ?? [];
 };

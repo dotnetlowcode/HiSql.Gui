@@ -4,16 +4,28 @@ import { Dictionary } from '@/helper/arrayHelper';
 import { ColumnStruct, fieldSortFun } from '@/serverApi/models/columnStruct';
 
 import { TableInfo } from '../../serverApi/apiModels/tableInfoModel';
-import { getFieldMap, getTableInfo, saveTableInfo } from '../../serverApi/tableInfoAPIs';
-import { DataBaseType, FromEditVueType } from '../columsTypes/fromEdit/fromEditViewModel';
+import {
+  getFieldMap,
+  getTableInfo,
+  saveTableInfo,
+  tabModelTableName,
+} from '../../serverApi/tableInfoAPIs';
+import {
+  DataBaseType,
+  FromEditVueType,
+  TableColumn,
+} from '../columsTypes/fromEdit/fromEditViewModel';
 import { SearchUIModelType } from '../columsTypes/searchFrom/searchFromViewModel';
+import { tableDataUpdate } from '@/serverApi/tableDataAPIs';
+import serverApiClient from '@/serverApi/httpClient';
+import config from '@/serverApi/config';
+import { ColumnsRenderParam } from '../columsTypes/columnsRender/columnsRenderViewModel';
 
 export const SelectTable: ColumnStruct = ColumnStruct.GetColumnStruct({
   FieldName: 'SourcesTable',
   FieldDesc: '数据表表',
   FieldType: DataBaseType.nvarchar,
   SearchUIModel: SearchUIModelType.SingleInput,
-
   IsRefTab: true,
   RefTab: `Hi_TabModel`,
   RefField: 'TabName',
@@ -44,6 +56,8 @@ for (const key in DataBaseType) {
 export default class TableDetailViewModel {
   tableName = ``;
 
+  tabDescript = ``;
+
   tableInfo: TableInfo = new TableInfo();
 
   tableFields: Array<ColumnStruct> = [];
@@ -65,6 +79,8 @@ export default class TableDetailViewModel {
   FromEditObj?: FromEditVueType;
 
   IsView = false;
+
+  showTableBaseInfoPanel = false;
 
   constructor(tableName: string, isView: boolean) {
     this.IsView = isView;
@@ -92,6 +108,40 @@ export default class TableDetailViewModel {
     this.tableFields.sort(fieldSortFun);
   }
 
+  filedColumnFieldTypeMap: Dictionary<string, ColumnsRenderParam> = {};
+
+  /**
+   * 属性赋值
+   * @param formRow
+   * @param propName
+   * @param value
+   */
+  setObjProp(formRow: Dictionary<string, any>, propName: string, value: any) {
+    formRow[propName] = value;
+  }
+
+  /**
+   * 获取表编辑结构
+   * @param fromRow
+   * @returns
+   */
+  getfieldTypeColumnStruct(fromRow: ColumnStruct) {
+    if (!this.fieldTypeColumn) {
+      return undefined;
+    }
+    const formRowStruct = this.filedColumnFieldTypeMap[fromRow.FieldName];
+    if (formRowStruct) {
+      return formRowStruct;
+    }
+    this.filedColumnFieldTypeMap[fromRow.FieldName] = new ColumnsRenderParam(
+      fromRow,
+      this.fieldTypeColumn,
+      this.tableInfo.TabColumnStruct,
+    );
+  }
+
+  fieldTypeColumn: ColumnStruct | undefined;
+
   /**
    * 加载表数据信息
    */
@@ -103,8 +153,16 @@ export default class TableDetailViewModel {
       tableInfoData = await this.initRemoteTableInfo();
     }
     this.tableInfo = tableInfoData;
-    this.tableInfo?.TabColumnStruct?.sort(fieldSortFun);
-    this.tableInfo?.TabColumns?.sort(fieldSortFun);
+    if (this.tableInfo) {
+      this.tableInfo.TabColumnStruct.sort(fieldSortFun);
+      this.tableInfo.TabPropStruct.sort(fieldSortFun);
+      this.tableName = tableInfoData.TabProps.TabName;
+      this.tabDescript = tableInfoData.TabProps.TabDescript;
+    }
+    const [firstFieldTypeColumn] = this.tableInfo.TabColumnStruct.filter(
+      r => r.FieldName === 'FieldType',
+    );
+    this.fieldTypeColumn = firstFieldTypeColumn;
     this.refreshData();
   }
 
@@ -124,14 +182,21 @@ export default class TableDetailViewModel {
 
   async copyTableColumn(tableName: string) {
     const { Data } = await getTableInfo(tableName);
-    const tempArray = [...this.tableInfo.TabColumns];
+    this.addNewColumns(Data?.TabColumns ?? []);
+  }
+
+  addNewColumns(columns: ColumnStruct[], isAppend = false) {
+    const tempArray = [...columns];
+    if (isAppend) {
+      tempArray.push(...this.tableInfo.TabColumns);
+    }
     const fieldMap: Dictionary<string, boolean> = {};
     tempArray.forEach(r => {
       fieldMap[r.FieldName] = true;
     });
-    if (Data?.TabColumns) {
-      for (let index = 0; index < Data.TabColumns.length; index++) {
-        const fieldItem = Data.TabColumns[index];
+    if (columns) {
+      for (let index = 0; index < columns.length; index++) {
+        const fieldItem = columns[index];
         if (fieldMap[fieldItem.FieldName]) {
           continue;
         }
@@ -165,17 +230,41 @@ export default class TableDetailViewModel {
     if (!Data) {
       throw `加载失败!`;
     }
+    Data.TabProps.TabName = ``;
+    Data.TabProps.TabDescript = ``;
+    Data.TabProps.TabReName = ``;
     return Data;
   }
 
-  // /**
-  //  * 保存数据
-  //  * @param columnData
-  //  */
-  // async saveRowData(columnData: any) {
-  //   const param = new TableDataAddRequest('Hi_FieldModel', columnData);
-  //   await saveTableRowData(param);
-  // }
+  /**
+   * excel上传并导入地址
+   */
+  get PostUrl() {
+    return `${config.ApiConfig.ApiHost}/hidata/table/getExcelColumn`;
+  }
+
+  /**
+   * 初始化上传头部
+   * @returns
+   */
+  GetPostHeader(): Dictionary<string, string> {
+    return {
+      Authorization: serverApiClient.Token,
+    };
+  }
+
+  /**
+   * 保存数据
+   * @param columnData
+   */
+  async saveTabProp() {
+    // const param = new TableDataAddRequest('Hi_FieldModel', columnData);
+    // await saveTableRowData(param);
+    const saveResult = await tableDataUpdate(tabModelTableName, this.tableInfo.TabProps, {
+      TabName: this.tableName,
+    });
+    return saveResult.StatusCode === 200;
+  }
 
   tableHasChange = false;
 
@@ -196,11 +285,11 @@ export default class TableDetailViewModel {
    * 执行表格变更请求
    */
   async saveTable() {
-    debugger;
     const table = this.tableInfo?.TabProps;
     const colums = this.tableInfo?.TabColumns;
     if (this.isAddTableModel) {
       table.TabName = this.tableName;
+      table.TabDescript = this.tabDescript;
       colums.forEach(r => {
         r.TabName = this.tableName;
       });
@@ -209,6 +298,7 @@ export default class TableDetailViewModel {
       throw `缺少表信息!`;
     }
     const saveResult = await saveTableInfo(table, colums, this.IsView);
+    await this.saveTabProp(); // 保存表属性
     return saveResult;
   }
 }

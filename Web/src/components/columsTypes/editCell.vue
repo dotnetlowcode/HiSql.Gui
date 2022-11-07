@@ -2,20 +2,26 @@
   <div class="mainPage">
     <template v-if="isEdit">
       <slot name="editRender">
-        <a-input v-model:value="vValue" class="w-full" @blur="
-          () => {
-            isEdit = false;
-          }
-        "></a-input>
+        <a-input
+          v-model:value="vValue"
+          class="w-full"
+          @blur="
+            () => {
+              isEdit = false;
+            }
+          "
+        ></a-input>
       </slot>
     </template>
     <template v-else>
       <slot>
-        <div @dblclick="
-          () => {
-            isEdit = true;
-          }
-        ">
+        <div
+          @dblclick="
+            () => {
+              isEdit = true;
+            }
+          "
+        >
           <span v-text="value"></span>
         </div>
       </slot>

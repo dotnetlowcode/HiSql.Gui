@@ -17,11 +17,10 @@ namespace HiSql.Gui.WebApi.Controllers
 
         OauthService service;
 
-
         [Route("hidata/oauth/login")]
         [HttpPost]
         [EnableCors("HiDataCors")]
-        public async Task<ApiResultModel<OauthGetTokenResponse>> GetToken([FromBody]OauthGetTokenRequest request)
+        public async Task<ApiResultModel<OauthGetTokenResponse>> GetToken([FromBody] OauthGetTokenRequest request)
         {
             OauthGetTokenResponse resp = await service.GetToken(request);
             return ApiResultModel.Success(resp);
@@ -31,11 +30,23 @@ namespace HiSql.Gui.WebApi.Controllers
         [HttpPost]
         [EnableCors("HiDataCors")]
         [ServiceFilter(typeof(WebAuthority))]
-        public async Task<ApiResultModel<ChangePasswordResponse>>ChangePassword([FromBody]ChangePasswordRequest request)
+        public async Task<ApiResultModel<ChangePasswordResponse>> ChangePassword([FromBody] ChangePasswordRequest request)
         {
             ChangePasswordResponse resp = await service.ChangePassword(request);
             return ApiResultModel.Success(resp);
         }
+
+
+        [Route("hidata/oauth/addUser")]
+        [HttpPost]
+        [EnableCors("HiDataCors")]
+        [ServiceFilter(typeof(WebAuthority))]
+        public async Task<ApiResultModel<AddUserResponse>> AddUser([FromBody] AddUserRequest request)
+        {
+            AddUserResponse resp = await service.AddUser(request);
+            return ApiResultModel.Success(resp);
+        }
+
 
     }
 }

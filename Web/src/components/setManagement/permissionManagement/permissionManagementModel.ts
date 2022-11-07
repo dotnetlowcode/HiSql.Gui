@@ -1,5 +1,6 @@
 import { message } from 'ant-design-vue';
 
+import { SyncEach } from '@/helper/arrayHelper';
 import {
   HiAuthorityAPIs,
   RoleSimpleAuth,
@@ -151,10 +152,11 @@ export class PermissionManagementModel {
       authList.push(obj);
     });
     const respId = tableNameList.toString();
-    const res = await this.saveRoleAuth(roleId, moduleId, respId, authList);
-    if (res) {
-      message.success(`保存成功!`);
-    }
-    return res;
+    await SyncEach(tableNameList, async (respId: string) => {
+      const res = await this.saveRoleAuth(roleId, moduleId, respId, authList);
+      return true;
+    });
+
+    return true;
   }
 }

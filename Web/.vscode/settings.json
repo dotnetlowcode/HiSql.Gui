@@ -1,3 +1,5 @@
 {
-  "vue3snippets.enable-compile-vue-file-on-did-save-code": false
+  "vue3snippets.enable-compile-vue-file-on-did-save-code": false,
+  "git.ignoreLimitWarning": true,
+  "compile-hero.disable-compile-files-on-did-save-code": false
 }

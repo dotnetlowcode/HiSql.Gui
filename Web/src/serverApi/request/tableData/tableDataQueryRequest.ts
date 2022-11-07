@@ -1,3 +1,5 @@
+import { Dictionary } from '@/helper/arrayHelper';
+
 export class QueryParamBase {
   /**
    * 要查询的表名
@@ -37,7 +39,12 @@ export class QueryParamBase {
   /**
    * hiSqlWhere条件参数
    */
-  HiSqlWhereParam = {};
+  HiSqlWhereParam: Dictionary<string, any> = {};
+
+  /**
+   * 是否去重
+   */
+  Distinct: boolean = false;
 }
 
 export class TableDataQueryRequest extends QueryParamBase {}

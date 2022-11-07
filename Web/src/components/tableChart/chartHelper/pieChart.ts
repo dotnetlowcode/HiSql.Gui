@@ -42,6 +42,7 @@ export class PieChart extends IChart {
       subTitle?: string | undefined;
     },
   ): Promise<void> {
+
     let pipData: pipDataType = [];
     const maxTypeLength = 10;
     rows.slice(0, maxTypeLength).forEach(r => {

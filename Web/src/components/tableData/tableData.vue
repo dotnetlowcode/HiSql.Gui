@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapPanel tableData">
+  <div ref="tableDataMain" class="wrapPanel tableData">
     <!-- <canvasDatagridComponents
       :data="data"
       :columns="columns"
@@ -20,78 +20,80 @@
         <!-- :title="`表名:${tableName}`" -->
         <a-card size="small" :bordered="false">
           <template #extra>
-            <a-popconfirm
-              title="您确定要清空表吗?"
-              ok-text="是"
-              cancel-text="否"
-              @confirm="clearTable"
-            >
-              <a-button>
-                <hiIcon :icon-name="`icon-qingkong1`"></hiIcon>
-                清空表
-              </a-button>
-            </a-popconfirm>
-
-            <a-popconfirm
-              v-if="showDelete"
-              title="您确定要删除吗?"
-              ok-text="是"
-              cancel-text="否"
-              @confirm="batchDelete"
-            >
-              <a-button type="primary">
-                <DeleteOutlined />
-                批量删除
-              </a-button>
-            </a-popconfirm>
-            <template v-if="!isSetPage">
-              <a-upload
-                v-if="!isViewApi"
-                name="file"
-                class="w-103px block"
-                :headers="viewModel.GetPostHeader()"
-                :multiple="false"
-                :action="viewModel.PostUrl"
-                @change="uploadChange"
+            <slot name="operate">
+              <a-popconfirm
+                title="您确定要清空表吗?"
+                ok-text="是"
+                cancel-text="否"
+                @confirm="clearTable"
               >
                 <a-button>
-                  <hiIcon :icon-name="`icon-shujudaoru`"></hiIcon>
-                  导入
+                  <hiIcon :icon-name="`icon-qingkong1`"></hiIcon>
+                  清空表
                 </a-button>
-                <template #itemRender></template>
-              </a-upload>
+              </a-popconfirm>
 
-              <a-dropdown>
-                <template #overlay>
-                  <a-menu
-                    @click="
+              <a-popconfirm
+                v-if="showDelete"
+                title="您确定要删除吗?"
+                ok-text="是"
+                cancel-text="否"
+                @confirm="batchDelete"
+              >
+                <a-button type="primary">
+                  <DeleteOutlined />
+                  批量删除
+                </a-button>
+              </a-popconfirm>
+              <template v-if="!isSetPage">
+                <a-upload
+                  v-if="!isViewApi"
+                  name="file"
+                  class="w-103px block"
+                  :headers="viewModel.GetPostHeader()"
+                  :multiple="false"
+                  :action="viewModel.PostUrl"
+                  @change="uploadChange"
+                >
+                  <a-button>
+                    <hiIcon :icon-name="`icon-shujudaoru`"></hiIcon>
+                    导入
+                  </a-button>
+                  <template #itemRender></template>
+                </a-upload>
+
+                <a-dropdown>
+                  <template #overlay>
+                    <a-menu
+                      @click="
                   e => {
                     exportQueryData(e.key as exportType);
                   }
                 "
-                  >
-                    <a-menu-item key="template">数据模板</a-menu-item>
-                    <a-menu-item key="currentData">当前数据</a-menu-item>
-                    <a-menu-item key="allData">全部数据</a-menu-item>
-                  </a-menu>
-                </template>
-                <a-button>
-                  <hiIcon :icon-name="`icon-shujudaochu`" />
-                  导出
-                  <DownOutlined />
-                </a-button>
-              </a-dropdown>
-            </template>
-            <a-button @click="openFilter()">
-              <FilterOutlined />
-              筛选
-            </a-button>
-            <a-button v-if="!isViewApi" type="primary" @click="openColumnSetting(null)">
-              <PlusCircleOutlined />
-              增加
-            </a-button>
+                    >
+                      <a-menu-item key="template">数据模板</a-menu-item>
+                      <a-menu-item key="currentData">当前数据</a-menu-item>
+                      <a-menu-item key="allData">全部数据</a-menu-item>
+                    </a-menu>
+                  </template>
+                  <a-button>
+                    <hiIcon :icon-name="`icon-shujudaochu`" />
+                    导出
+                    <DownOutlined />
+                  </a-button>
+                </a-dropdown>
+              </template>
+              <a-button @click="openFilter()">
+                <FilterOutlined />
+                筛选
+              </a-button>
+              <a-button v-if="!isViewApi" type="primary" @click="openColumnSetting(null)">
+                <PlusCircleOutlined />
+                增加
+              </a-button>
+            </slot>
           </template>
-          <a-table
+          <!-- <a-table
             size="small"
             :row-selection="(rowSelection as any)"
             style="width: 100%; height: 100%"
@@ -112,7 +114,52 @@
                 <a>删除</a>
               </a-popconfirm>
             </template>
-          </a-table>
+          </a-table> -->
+          <vxe-table
+            ref="xTable"
+            show-header-overflow
+            show-overflow
+            :row-config="{ isHover: true }"
+            :data="data"
+            :radio-config="{ highlight: true }"
+            :scroll-x="{ enabled: true, gt: 0, scrollToLeftOnChange: true }"
+            :scroll-y="{ enabled: true, gt: 0, scrollToTopOnChange: true, mode: 'wheel' }"
+            :height="tableheight"
+            @checkbox-change="rowSelectionCheck"
+            @checkbox-all="rowSelectionCheck"
+          >
+            <vxe-column type="checkbox" width="60"></vxe-column>
+            <vxe-column
+              v-for="item in columns"
+              :key="item"
+              :field="item.dataIndex"
+              :title="item.title"
+              :width="item.width"
+            ></vxe-column>
+            <vxe-column title="操作" width="160" fixed="right">
+              <template #default="{ row }">
+                <vxe-button @click="openColumnSetting(row)">编辑</vxe-button>
+                <vxe-button @click="deleteDataColumn(row)">删除</vxe-button>
+              </template>
+            </vxe-column>
+          </vxe-table>
+          <vxe-pager
+            v-model:page-size="pagination.pageSize"
+            v-model:current-page="pagination.current"
+            :layouts="[
+              'Sizes',
+              'PrevJump',
+              'PrevPage',
+              'Number',
+              'NextPage',
+              'NextJump',
+              'FullJump',
+              'Total',
+            ]"
+            :page-sizes="[10, 15, 20, 30, 50, 100, 500, 1000, 5000, 10000]"
+            :total="pagination.total"
+            @page-change="handlePageChange"
+          ></vxe-pager>
         </a-card>
       </a-spin>
     </div>
@@ -139,7 +186,7 @@
     placement="right"
     :closable="true"
   >
-    <template #extra>
+    <!-- <template #extra>
       <a-button
         type="primary"
         @click="
@@ -157,6 +204,28 @@
     (el: any) => {
       viewModel.searchFrom = el;
     }"
+      :search-columns-struct="searchColumns"
+      @search="searchData"
+    /> -->
+    <template #extra>
+      <a-button
+        type="primary"
+        @click="
+          () => {
+            viewModel.whereTableV2.Submit();
+          }
+        "
+      >
+        <CheckOutlined />
+        搜索
+      </a-button>
+    </template>
+    <whereTableV2
+      :ref="
+    (el: any) => {
+      viewModel.whereTableV2 = el;
+    }"
+      :table-columns-struct="columnStruct"
       :search-columns-struct="searchColumns"
       @search="searchData"
     />
@@ -179,12 +248,20 @@ import Modal from 'ant-design-vue/es/modal/Modal';
 import { createVNode } from 'vue';
 import dataEdit from '../columsTypes/dataEdit/dataEdit.vue';
 import searchFrom from '../columsTypes/searchFrom/searchFrom.vue';
+import whereTableV2 from '../columsTypes/whereTableV2/whereTableV2.vue';
 import TableDetailViewModel, { exportType, ImportExcelResult } from './tableDataViewModel';
 import { ColumnStruct } from '../../serverApi/models/columnStruct';
 import { StoreType } from '@/store';
 import { ExportTaskInfoModel } from '@/store/model/ExportTaskInfo';
 import { getSearchColumns } from '@/serverApi/dataHelper';
 import ApiResultModel from '@/serverApi/apiModels/apiResultModel';
+
+const xTable = ref();
+const tableheight = ref();
+tableheight.value = window.innerHeight - 330;
+window.onresize = async () => {
+  tableheight.value = window.innerHeight - 330;
+};
 
 const store = useStore<StoreType>();
 const showFromEdit = ref(false);
@@ -241,19 +318,27 @@ const pagination: TablePaginationConfig = reactive({
     }
   },
 });
-
+const handlePageChange = (param: any) => {
+  if (param.type === 'current') {
+    if (loadPage != null) {
+      loadPage(param.currentPage, pagination.pageSize);
+    }
+  } else if (param.type === 'size') {
+    if (loadPage != null) {
+      loadPage(1, param.pageSize);
+    }
+  }
+};
 const uploadChange = (r: UploadChangeParam<UploadFile<ApiResultModel<ImportExcelResult>>>) => {
   const resp = r.file.response;
-  if (resp?.StatusCode !== 0) {
+  if (resp && resp?.StatusCode !== 0) {
     message.error(resp?.ErrorMessage);
     return;
   }
-  if (resp?.Data?.UpdateCount !== undefined) {
+  if (resp && resp?.Data?.UpdateCount !== undefined) {
     message.success(`已更新数据${r.file.response?.Data?.UpdateCount ?? 0}条`);
     loadPage && loadPage(1, pagination.pageSize);
-    return;
   }
-  message.warning(`数据导入失败!`);
 };
 loadPage = async (pIndex?: number, size?: number) => {
   loadIng.value = true;
@@ -279,6 +364,9 @@ loadPage = async (pIndex?: number, size?: number) => {
   pagination.current = pIndex;
   pagination.pageSize = size;
   console.log(pagination);
+  if (xTable.value) {
+    xTable.value.loadData(data);
+  }
 };
 
 (async () => {
@@ -338,13 +426,22 @@ const saveFrom = async (columnData: any) => {
  * @param columnData
  */
 const deleteDataColumn = async (columnData: any) => {
-  const deleteResult = await viewModel.deleteDataColumn(columnData);
-  if (deleteResult.Data?.IsOk) {
-    loadPage && loadPage(pagination.current, pagination.pageSize);
-    message.success(`已删除!`);
-  } else {
-    message.error(`删除失败!\r\n${deleteResult.Data?.Message ?? ``}`);
-  }
+  Modal.confirm({
+    content: '您确定要删除吗',
+    icon: createVNode(ExclamationCircleOutlined),
+    async onOk() {
+      const deleteResult = await viewModel.deleteDataColumn(columnData);
+      if (deleteResult.Data?.IsOk) {
+        loadPage && loadPage(pagination.current, pagination.pageSize);
+        message.success(`已删除!`);
+      } else {
+        message.error(`删除失败!\r\n${deleteResult.Data?.Message ?? ``}`);
+      }
+    },
+    cancelText: '取消',
+    okText: '确认',
+    onCancel() {},
+  });
 };
 
 const openColumnSetting = (record: any) => {
@@ -369,25 +466,31 @@ const openColumnSetting = (record: any) => {
 const openFilter = async () => {
   showSearchFromEdit.value = true;
 };
-const searchData = async (searchParam: object) => {
+const searchData = async (searchParam: any) => {
   showSearchFromEdit.value = false;
-  viewModel.setSearchData(searchParam);
+  // viewModel.setSearchData(searchParam);
+  viewModel.searchHiParamObj = searchParam;
   if (loadPage != null) {
     await loadPage(1, pagination.pageSize);
   }
 };
 const showDelete = ref(false);
 const selectedTableRows = ref<Array<any>>([]);
-const rowSelection = {
-  // selectedRowKeys: [],
-  onChange: (selectedRowKeys: string[], selectedRows: any[]) => {
-    showDelete.value = selectedRowKeys.length > 0;
-    selectedTableRows.value = selectedRows;
-  },
-  getCheckboxProps: (record: any) => ({
-    disabled: false, // Column configuration not to be checked
-  }),
+// const rowSelection = {
+//   onChange: (selectedRowKeys: string[], selectedRows: any[]) => {
+//     showDelete.value = selectedRowKeys.length > 0;
+//     selectedTableRows.value = selectedRows;
+//   },
+//   getCheckboxProps: (record: any) => ({
+//     disabled: false, // Column configuration not to be checked
+//   }),
+// };
+const rowSelectionCheck = () => {
+  const selectedRows = xTable.value.getCheckboxRecords();
+  showDelete.value = selectedRows.length > 0;
+  selectedTableRows.value = selectedRows;
 };
+
 const batchDelete = async () => {
   if (selectedTableRows.value.length < 1) {
     message.warn(`请选择要删除的行!`);
@@ -398,6 +501,7 @@ const batchDelete = async () => {
     showDelete.value = false;
     loadPage && loadPage(1, pagination.pageSize);
     message.success(`删除成功!`);
+    selectedTableRows.value = [];
   } else {
     message.error(`删除失败!`);
   }

@@ -2,41 +2,44 @@
   <a-form
     :ref="
       (el:any) => {
-        formRef = el;
+        viewModel.formRef=el;
       }
     "
-    :rules="rules"
-    :model="formData"
+    :rules="viewModel.rules"
+    :model="viewModel.formData"
     :label-col="labelCol"
     :wrapper-col="wrapperCol"
   >
-    <div>
-      <a-tabs v-model:activeKey="activGroup">
+    <div v-if="props.fieldGroupName">
+      <a-tabs v-model:activeKey="viewModel.activGroup">
         <a-tab-pane
-          v-for="fGroup in fieldGroups"
+          v-for="fGroup in viewModel.fieldGroups"
           :key="fGroup.ElementValue"
           :tab="`${fGroup.ElementDesc}配置`"
           force-render
         />
       </a-tabs>
     </div>
-    <template v-for="fieldObj in fromFields" :key="fieldObj.columnStruct.FieldName">
+    <template v-for="fieldObj in viewModel.fromFields" :key="fieldObj.columnStruct.FieldName">
       <a-form-item
-        v-if="showColumn(fieldObj.columnStruct, formData, activGroup, isAddTable)"
+        v-if="viewModel.showColumn(fieldObj.columnStruct, isAddTable)"
         :ref="`${fieldObj.columnStruct.FieldName}`"
         :name="`${fieldObj.columnStruct.FieldName}`"
         :label="fieldObj.columnStruct.FieldDesc"
       >
-        <columnsRender :param="fieldObj" @column-update="updateValue" />
+        <columnsRender
+          :param="fieldObj"
+          @column-update="(pValue:any)=>{
+          viewModel.updateValue(pValue);
+        }"
+        />
       </a-form-item>
     </template>
   </a-form>
 </template>
 <script lang="ts" setup>
-import { Ref } from 'vue';
 import columnsRender from '../columnsRender/columnsRender.vue';
-import { fieldGroup, loadFieldGroups, showColumn } from './fromEditViewModel';
-import { ColumnsRenderParam } from '../columnsRender/columnsRenderViewModel';
+import { FromEditViewModel } from './fromEditViewModel';
 import { ColumnStruct } from '../../../serverApi/models/columnStruct';
 
 const props = defineProps({
@@ -56,61 +59,32 @@ const props = defineProps({
     tyepe: Boolean,
     default: false,
   },
+  fieldGroupName: {
+    required: false,
+    type: String,
+    default: `FieldGroup`,
+  },
 });
-const formData: Ref<{
-  [x: string]: any;
-}> = ref({});
-
-const rules: { [key: string]: Array<any> } = {};
-const fromFields = reactive<Array<ColumnsRenderParam>>([]);
-(() => {
-  // debugger;
-  // console.info(`tabColumnData`);
-  // console.info(props.tabColumnData);
-  formData.value = { ...props.tabColumnData };
-  // 初始化表单验证规则,目前只加了非空验证,后续可以增加其他规则
-  for (let index = 0; index < props.tabColumns.length; index++) {
-    const fieldObj = props.tabColumns[index];
-    fromFields.push(new ColumnsRenderParam(formData, fieldObj, props.tabColumns, false));
-    const fieldRule = [];
-    if (fieldObj.IsRequire && fieldObj.DBDefault !== 10) {
-      // 字段为必填且默认值不为String.Empty (N'')
-      fieldRule.push({
-        required: true,
-        message: `请输入${fieldObj.FieldDesc}`,
-        trigger: 'blur',
-      });
-    }
-    // 其他规则后续补充.....
-    if (fieldRule.length > 0) {
-      rules[fieldObj.FieldName] = fieldRule;
-    }
-  }
-})();
-
-const formRef = ref<{
-  validate: () => Promise<any>;
-}>();
+// watch(
+//   () => props.fieldGroupName,
+//   () => {
+//
+//     console.log(props.fieldGroupName);
+//   },
+// );
+const viewModel = reactive(new FromEditViewModel());
+(window as any).TEST = viewModel;
+// activGroup为 ``时表示不需要分组
+viewModel.activGroup = props.fieldGroupName ? 'Default' : ``;
+viewModel.formData = Object.assign(viewModel.formData, props.tabColumnData);
+viewModel.load(props.tabColumns, props.fieldGroupName);
 
 const labelCol = { style: { width: '150px' } };
 const wrapperCol = { span: 14 };
-const updateValue = (p: any) => {
-  // console.info(`参数`, p);
-  formData.value[p.fieldName] = p.value;
-  // console.info(formData);
-};
-
-const activGroup = ref('Default');
-const fieldGroups = reactive<Array<fieldGroup>>([]);
-loadFieldGroups().then(v => {
-  fieldGroups.push(...v);
-  activGroup.value = fieldGroups[0].ElementValue;
-});
-
 defineExpose({
   Save: async () => {
-    const k = await formRef.value?.validate();
-    return formData.value;
+    const k = await viewModel.formRef?.validate();
+    return viewModel.formData;
   },
 });
 </script>

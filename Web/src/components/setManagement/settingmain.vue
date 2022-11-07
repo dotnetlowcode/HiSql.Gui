@@ -33,11 +33,12 @@
               :res-id="selectMenuInfo.TableName"
               :operate-id="`hiTable-tableData-query`"
             >
-              <tableData
+              <userList />
+              <!-- <tableData
                 :table-name="selectMenuInfo.TableName"
                 :is-view-api="false"
                 :is-set-page="true"
-              />
+              /> -->
               <template #accessDenied>
                 <noPermission />
               </template>
@@ -70,6 +71,7 @@
 <script setup lang="ts">
 import { LeftOutlined } from '@ant-design/icons-vue';
 import changePassword from './userSetting/changePassword.vue';
+import userList from './userSetting/userList.vue';
 
 const emits = defineEmits([`closedPermissionManagement`]);
 

@@ -13,5 +13,9 @@ namespace HiSql.GUI.Repository.Models
         public string Password { get; set; }
 
         public string UId { get; set; }
+
+        public string RId { get; set; }
+
+        public string GId { get; set; }
     }
 }

@@ -2,12 +2,7 @@ import * as echarts from 'echarts';
 import { EChartsOption } from 'echarts';
 import { List } from 'linqts';
 
-import {
-  ChartParam,
-  ChartType,
-  IChart,
-  RegisterIChart,
-} from './ichart';
+import { ChartParam, ChartType, IChart, RegisterIChart } from './ichart';
 
 export class ScatterChart extends IChart {
   constructor(param: ChartParam) {
@@ -45,9 +40,13 @@ export class ScatterChart extends IChart {
       // eslint-disable-next-line @typescript-eslint/ban-types
       itemStyle?: Object;
     }> = [];
-
+    if (groupFields.length !== 2 || calcFields.length !== 2) {
+      throw 'X维度需要2项，且Y数值需要2项';
+      // message.warning(`X维度需要2项，且Y数值需要2项`);
+      return;
+    }
     const dimensionsArray: Array<string> = [];
-    debugger;
+
     const groupRowsMap = new List(rows).GroupBy(r => r[groupFields[0].fieldName]);
     // const groupRowsMap1 = new List(rows).GroupBy(r => r[groupFields[1].fieldName]);
     for (const key in groupRowsMap) {
@@ -125,7 +124,7 @@ export class ScatterChart extends IChart {
         // }
       }
     }
-    debugger;
+
     const chartOption: EChartsOption = {
       backgroundColor: new echarts.graphic.RadialGradient(0.3, 0.3, 0.8, [
         {
@@ -186,5 +185,5 @@ RegisterIChart('Scatter', param => {
 export const ScatterChartType: ChartType = {
   Title: `散点图`,
   TypeName: `Scatter`,
-  IconName: `icon-a-HiSqlGUIICON_guanxitu`,
+  IconName: `icon-a-HiSqlGUIICON_sandiantu`,
 };

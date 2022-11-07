@@ -40,7 +40,7 @@ class ServerHttpClient {
       });
       return result.data;
     } catch (error: any) {
-      if (error.message) {
+      if (error?.response?.status !== 403 && error?.message) {
         throw error.message;
       }
       if (error.response.status === 403) {

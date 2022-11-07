@@ -3,6 +3,8 @@ using HiSql.GUI.Framework.DependencyInjection;
 using HiSql.GUI.Framework.StaticFileHelper;
 using HiSql.GUI.Helper;
 using HiSql.GUI.Repository.HisSqlRepository;
+using NPOI.SS.Formula.Functions;
+using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -87,7 +89,11 @@ namespace HiSql.GUI.TimeJob
             if (string.IsNullOrWhiteSpace(tableName))
             {
                 tableName = "SQLQuery";
-                tableInfo = await HiSqlDataHelper.DataTableToTableInfo(tableName, dt);
+                var tabColumn = await HiSqlDataHelper.GetDataTableHiColumn(dt);
+                tableInfo = new TabInfo(new HiTable
+                {
+                    TabName = tableName
+                }, tabColumn);
             }
             else
             {
@@ -220,7 +226,7 @@ namespace HiSql.GUI.TimeJob
                     //自增主键不能填也不能改
                     var tipStr = hiColumn.IsIdentity ? "[不可修改]" : "";
                     var cnName = (string.IsNullOrEmpty(hiColumn.FieldDesc) ? dataColumn.ColumnName : hiColumn.FieldDesc) + tipStr;
-                    cnHeader.Add(tipStr);
+                    cnHeader.Add(cnName);
                 }
                 else
                 {

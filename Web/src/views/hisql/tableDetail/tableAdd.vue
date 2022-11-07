@@ -1,7 +1,8 @@
 <template>
   <TableStruct :table-name="``" :is-view-api="false" @createNewTable="createTable"></TableStruct>
 </template>
-<script setup lang="ts">
+
+<script setup lang="ts" name="tableAdd">
 import { tableDetailRouterName } from '@/router';
 
 // eslint-disable-next-line no-undef

@@ -1,7 +1,6 @@
-import hljs from 'highlight.js';
 import { List } from 'linqts';
-import { Dictionary, SyncEach } from '@/helper/arrayHelper';
 import ValidatorSchema, { Rules } from 'async-validator';
+import { Dictionary, SyncEach } from '@/helper/arrayHelper';
 import { ApiSave, ApiTestExcute, getApi } from '@/serverApi/databaseAPIs';
 import { HiApiParamEntity, ParamFieldType } from '@/serverApi/models/tableModel/hiApiFields';
 import { HiApiEntity } from '@/serverApi/models/tableModel/hiApiModel';

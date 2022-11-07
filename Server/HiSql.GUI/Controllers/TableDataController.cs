@@ -154,13 +154,16 @@ namespace HiSql.Gui.WebApi.Controllers
         public async Task<ApiResultModel<CheckExportTaskStatusResponse>> CheckExportTaskStatus([FromBody] CheckExportTaskStatusRequest request)
         {
             CheckExportTaskStatusResponse resp;
+            var maxWaitCount = 10;
             while (true)
             {
+
                 resp = await Service.CheckExportTaskStatus(request);
-                if (resp.List.Count > 0)
+                if (resp.List.Count > 0 || maxWaitCount < 1)
                 {
                     break;
                 }
+                maxWaitCount -= 1;
                 await Task.Delay(2000);
             }
             return ApiResultModel.Success(resp);

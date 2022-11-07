@@ -2,7 +2,7 @@
   <router-link :to="{ path: '/' }" class="flex items-center">
     <div class="hiLogo">
       <img class="mr-10px h-30px" src="@/assets/hi_logo.png" />
-      <span class="logoText">HiSql GUI</span>
+      <span class="logoText">HiSql Gui</span>
     </div>
   </router-link>
 </template>

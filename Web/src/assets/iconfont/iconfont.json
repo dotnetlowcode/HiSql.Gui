@@ -6,6 +6,27 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "586930",
+      "name": "inner-join",
+      "font_class": "left-join",
+      "unicode": "e752",
+      "unicode_decimal": 59218
+    },
+    {
+      "icon_id": "586944",
+      "name": "left-join",
+      "font_class": "inner-join",
+      "unicode": "e760",
+      "unicode_decimal": 59232
+    },
+    {
+      "icon_id": "32541763",
+      "name": "inner-join-copy",
+      "font_class": "right-join",
+      "unicode": "ed9e",
+      "unicode_decimal": 60830
+    },
+    {
       "icon_id": "31508024",
       "name": "HiSql GUI ICON_雷达",
       "font_class": "a-HiSqlGUIICON_leida",
@@ -392,7 +413,7 @@
     },
     {
       "icon_id": "22376242",
-      "name": "打开文件型数据表",
+      "name": "打开文件型数据源",
       "font_class": "dakaiwenjianxingshujuyuan",
       "unicode": "ed9d",
       "unicode_decimal": 60829

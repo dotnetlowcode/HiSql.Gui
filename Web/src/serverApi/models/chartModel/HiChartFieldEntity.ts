@@ -1,3 +1,5 @@
+import { DataBaseType } from '@/components/columsTypes/fromEdit/fromEditViewModel';
+
 export type calcName = `count` | `sum` | `avg` | `max` | `min`;
 export type DMSKey = 'X' | 'Y' | 'F';
 export class HiChartFieldEntity {
@@ -50,4 +52,9 @@ export class HiChartFieldEntity {
    * CreateTime
    */
   CreateTime: Date | string = new Date();
+
+  /**
+   * 字段类型
+   */
+  FieldType: DataBaseType = DataBaseType.varchar;
 }

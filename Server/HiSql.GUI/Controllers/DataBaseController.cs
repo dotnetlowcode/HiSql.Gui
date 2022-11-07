@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace HiSql.Gui.WebApi.Controllers
 {
 
-    [ServiceFilter(typeof(WebAuthority))]
+
     public class DataBaseController : ControllerBase
     {
 
@@ -32,6 +32,7 @@ namespace HiSql.Gui.WebApi.Controllers
         [Route("hidata/database/tables")]
         [HttpPost, HttpGet]
         [EnableCors("HiDataCors")]
+        [ServiceFilter(typeof(WebAuthority))]
         public async Task<ApiResultModel<GetTablesResponse>> GetTables([FromBody] GetTablesRequest request)
         {
             GetTablesResponse resp = await Service.GetTables(request);
@@ -42,6 +43,7 @@ namespace HiSql.Gui.WebApi.Controllers
         [Route("hidata/database/apiTestExcute")]
         [HttpPost]
         [EnableCors("HiDataCors")]
+        [ServiceFilter(typeof(WebAuthority))]
         public async Task<ApiResultModel<ApiTestExcuteResponse>> ApiTestExcute([FromBody] ApiTestExcuteRequest request)
         {
             var tokenInfo = this.Request.HttpContext.Items["TokenInfo"] as JwtPlayload;
@@ -53,6 +55,7 @@ namespace HiSql.Gui.WebApi.Controllers
         [Route("hidata/hiApi/{groupName}/{apiName}")]
         [HttpPost]
         [EnableCors("HiDataCors")]
+        [ServiceFilter(typeof(WebAuthority))]
         public async Task<ApiResultModel<HiApiResponse>> HiApiExcute([FromRoute] string groupName, [FromRoute] string apiName, [FromBody] ExpandoObject body)
         {
             var tokenInfo = this.Request.HttpContext.Items["TokenInfo"] as JwtPlayload;
@@ -68,6 +71,7 @@ namespace HiSql.Gui.WebApi.Controllers
         [Route("hidata/hiApi/{id}")]
         [HttpPost]
         [EnableCors("HiDataCors")]
+        [ServiceFilter(typeof(WebAuthority))]
         public async Task<ApiResultModel<HiApiResponse>> HiApiExcute([FromRoute] string id, [FromBody] ExpandoObject body)
         {
             var tokenInfo = this.Request.HttpContext.Items["TokenInfo"] as JwtPlayload;
@@ -83,10 +87,24 @@ namespace HiSql.Gui.WebApi.Controllers
         [Route("hidata/version")]
         [HttpPost]
         [EnableCors("HiDataCors")]
+        [ServiceFilter(typeof(WebAuthority))]
         public async Task<ApiResultModel<DataBaseVersionResponse>> GetDBVersion([FromBody] DataBaseVersionRequest request)
         {
             DataBaseVersionResponse resp = await Service.GetDBVersion(request);
             return ApiResultModel.Success(resp);
+        }
+
+
+        [Route("hidata/getSnowflakeId")]
+        [HttpPost]
+        [EnableCors("HiDataCors")]
+        public async Task<ApiResultModel<SnowflakeIdApiResponse>> GetSnowflakeId(SnowflakeIdApiRequest request)
+        {
+            var snowflakeIds = HiSql.Snowflake.NextId(request.Count);
+            return ApiResultModel.Success(new SnowflakeIdApiResponse
+            {
+                SnowflakeIds = snowflakeIds
+            });
         }
 
 

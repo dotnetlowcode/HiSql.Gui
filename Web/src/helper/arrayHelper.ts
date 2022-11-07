@@ -156,6 +156,21 @@ export const AnyLimit = async <T>(
 };
 
 /**
+ * 移除集合中的一个项
+ * @param arrayList
+ * @param item
+ * @returns
+ */
+export const ArrayRemoveItem = <T>(arrayList: Array<T>, item: T) => {
+  const index = arrayList.indexOf(item);
+  if (index === -1) {
+    return false;
+  }
+  arrayList.splice(index, 1);
+  return true;
+};
+
+/**
  * 泛型类型
  */
 export type Dictionary<TKey extends string | number | symbol, TValue> = {

@@ -20,7 +20,7 @@ export class ERGraphViewModel {
       //   }
       // },
       onEdgeLabelRendered: args => {
-        debugger;
+
         const { selectors } = args;
         const content = selectors.foContent as HTMLDivElement;
         if (content) {

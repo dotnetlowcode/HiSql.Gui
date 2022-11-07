@@ -1,24 +1,24 @@
-﻿using System;
+﻿using Dasync.Collections;
+using HiSql.GUI.ApiModes;
+using HiSql.GUI.ApiModes.Table;
+using HiSql.GUI.Helper;
+using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Dasync.Collections;
-using HiData.Framework;
-using HiSql;
-using HiSql.GUI.ApiModes;
-using HiSql.GUI.ApiModes.Table;
-using HiSql.GUI.ApiModes.TableTask;
-using HiSql.GUI.Helper;
-using Microsoft.AspNetCore.Http;
 
 namespace HiSql.GUI.Services
 {
     public class TableService : ServiceBase, ITransient
     {
 
-        public TableService(IHttpContextAccessor httpContextAccessor,HiSqlClient hiSqlClient)
+        public TableService(IHttpContextAccessor httpContextAccessor, HiSqlClient hiSqlClient)
             : base(httpContextAccessor, hiSqlClient)
         {
         }
@@ -49,7 +49,7 @@ where f.TabName=@tabName";// and fext.DbName is not null
             foreach (var item in mapResult)
             {
                 var obj = (IDictionary<string, object>)item;
-                if (!obj.ContainsKey("ExtDbName"))
+                if (!obj.ContainsKey("ExtDbName") || obj["ExtDbName"] == null)
                 {
                     addList.Add(obj);
                 }
@@ -115,7 +115,8 @@ where f.TabName=@tabName";// and fext.DbName is not null
             if (tableName == "NewTable")
             {
                 sqlParam = new Dictionary<string, object> {
-                   {"TabName",hiTabModelTableName }//拿hiFieldModel做模板
+                   {"TabName",hiTabModelTableName }
+                    //拿hiFieldModel做模板
                 };
                 tabProps = (await sqlClient.Query(hiTabModelTableName).Field("*").Where(new Filter { { "TabName", OperType.EQ, hiTabModelTableName }
                 }).ToEObjectAsync()).FirstOrDefault();
@@ -156,9 +157,10 @@ where f.TabName=@tabName";// and fext.DbName is not null
                 tabColumns = await sqlClient.HiSql(querySql, sqlParam).ToEObjectAsync();
             }
             var tabColumnStruct = await GetTabColumnStrct(hiFieldModelTableName);
-            var tabPropStruct = await sqlClient.Query(hiTabModelTableName).Field("*").Where(new Filter {
-                { "TabName", OperType.EQ, hiTabModelTableName }
-            }).ToEObjectAsync();
+            var tabPropStruct = await GetTabColumnStrct(hiTabModelTableName);
+            //await sqlClient.Query(hiTabModelTableName).Field("*").Where(new Filter {
+            //{ "TabName", OperType.EQ, hiTabModelTableName }
+            //}).ToEObjectAsync();
             return new
             {
                 TabColumnStruct = tabColumnStruct,
@@ -211,13 +213,19 @@ where f.TabName=@tabName";// and fext.DbName is not null
             if (!string.IsNullOrWhiteSpace(param.HiSqlWhere))
             {
                 //string sqlWhere = JsonQueryHelper.JsonWhereToSql(param.HiSqlWhere);
-                query = query.Where(param.HiSqlWhere);
+                //query = query.Where(param.HiSqlWhere,);
+                var sql = $"select {param.Fields} from {param.TableName} where {param.HiSqlWhere}";
+                query = sqlClient.HiSql(sql, param.HiSqlWhereParam);
             }
-            string sqlWhere = JsonQueryHelper.JsonWhereToSql(param.WhereJson);
-            if (!string.IsNullOrWhiteSpace(sqlWhere))
+            else
             {
-                query = query.Where(sqlWhere);
+                string sqlWhere = JsonQueryHelper.JsonWhereToSql(param.WhereJson);
+                if (!string.IsNullOrWhiteSpace(sqlWhere))
+                {
+                    query = query.Where(sqlWhere);
+                }
             }
+
             if (param.PageIndex >= 0)
             {
                 Stopwatch sw = new Stopwatch();
@@ -294,9 +302,9 @@ where f.TabName=@tabName";// and fext.DbName is not null
             var onlyFields = pNames?.Where(r => !pHiColumnNames.Contains(r)).ToArray();
             try
             {
-                //字段在2个表里,所以要分开更新
+                //字段在2个表里,所以要分开更新 
                 var upResult = await sqlClient.Update(hiFieldModelTableName, dicColumns).Exclude(onlyFields).ExecCommandAsync();
-                upResult = await sqlClient.Update(hiFieldModelExtTableName, dicColumns).ExecCommandAsync();
+                upResult = await sqlClient.Update(hiFieldModelExtTableName, dicColumns).Only(onlyFields).ExecCommandAsync();
                 Console.WriteLine(upResult);
             }
             catch (Exception ex)
@@ -304,6 +312,10 @@ where f.TabName=@tabName";// and fext.DbName is not null
                 Console.WriteLine(ex);
             }
             var isOK = saveResult?.Item1 ?? true;
+            if (saveResult.Item2.Contains("无变更"))
+            {
+                isOK = true;
+            }
             var message = saveResult?.Item2 ?? "未修改";
             var sql = saveResult?.Item3 ?? "NoSql";
             return new SaveTableResponse
@@ -316,6 +328,15 @@ where f.TabName=@tabName";// and fext.DbName is not null
 
         public async Task<TableViewCreateResponse> CreateViewTable(TableViewCreateRequest request)
         {
+            if (sqlClient.DbFirst.CheckTabExists(request.TableName))
+            {
+                sqlClient.DbFirst.ModiView(request.TableName, request.Sql, OpLevel.Execute);
+            }
+            else
+            {
+                sqlClient.DbFirst.CreateView(request.TableName, request.Sql, OpLevel.Execute);
+            }
+
             var result = sqlClient.DbFirst.CreateView(request.TableName, request.Sql, OpLevel.Execute);
             return new TableViewCreateResponse()
             {
@@ -384,5 +405,100 @@ where f.TabName=@tabName";// and fext.DbName is not null
             return delResult;
         }
 
+
+        ///// <summary>
+        ///// 根据Excel生产表
+        ///// </summary>
+        ///// <param name="request"></param>
+        ///// <returns></returns>
+        //public async Task<ExcelCreateTableResponse> CreateExcelTable(ExcelCreateTableRequest request)
+        //{
+        //    var file = request.file;
+        //    var fileName = file.FileName;
+        //    var path = GetSavePath(fileName);
+        //    var savePath = AppContext.BaseDirectory + path;
+        //    var dirPath = Path.GetDirectoryName(savePath);
+        //    if (dirPath != null && !Directory.Exists(dirPath))
+        //    {
+        //        Directory.CreateDirectory(dirPath);
+        //    }
+        //    using (Stream stream = new FileStream(savePath, FileMode.Create))
+        //    {
+        //        await file.CopyToAsync(stream);
+        //    }
+        //    await CreateTable(this.sqlClient, savePath, request.TableName);
+        //    return new ExcelCreateTableResponse
+        //    {
+        //        TableName = fileName
+        //    };
+        //}
+
+        //public static async Task<Tuple<TabInfo, DataTable>> CreateTable(HiSqlClient hisqlClient, string tableName, string savePath)
+        //{
+        //    var excel = new Extension.Excel(new Extension.ExcelOptions()
+        //    {
+        //        TempType = Extension.TempType.HEADER,
+        //        DataBeginRow = 0,
+        //        HeaderRow = 1
+        //    });
+        //    var sheetNames = excel.GetExcelSheetNames(savePath);
+        //    if (sheetNames == null)
+        //    {
+        //        throw new Exception("Excel读取失败！");
+        //    }
+        //    var dt = excel.ExcelToDataTable(savePath, false, sheetName: sheetNames[0]);
+        //    var tableInfo = await HiSqlDataHelper.DataTableToTableInfo(tableName, dt);
+        //    hisqlClient.DbFirst.CreateTable(tableInfo);
+        //    dt.Rows.Remove(dt.Rows[0]);//移除表头
+        //    try
+        //    {
+        //        var dtList = dt.ToExpandObjectList();
+        //        var insertResult = await hisqlClient.Insert(tableInfo.TabModel.TabName, dtList).ExecCommandAsync();
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine(ex);
+        //    }
+        //    return Tuple.Create(tableInfo, dt);
+        //}
+
+
+        private static string GetSavePath(string fileName)
+        {
+            return $"/upload/excelTable/{fileName}";
+        }
+
+        public async Task<ExcelHiColumnResponse> GetExcelColumn(IFormFile file)
+        {
+            var fileName = file.FileName;
+            var path = GetSavePath(fileName);
+            var savePath = AppContext.BaseDirectory + path;
+            var dirPath = Path.GetDirectoryName(savePath);
+            if (dirPath != null && !Directory.Exists(dirPath))
+            {
+                Directory.CreateDirectory(dirPath);
+            }
+            using (Stream stream = new FileStream(savePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+            var excel = new Extension.Excel(new Extension.ExcelOptions()
+            {
+                TempType = Extension.TempType.HEADER,
+                DataBeginRow = 0,
+                HeaderRow = 1
+            });
+            var sheetNames = excel.GetExcelSheetNames(savePath);
+            if (sheetNames == null)
+            {
+                throw new Exception("Excel读取失败！");
+            }
+            var dt = excel.ExcelToDataTable(savePath, false, sheetName: sheetNames[0]);
+            var hiColumns = await HiSqlDataHelper.GetDataTableHiColumn(dt);
+            return new ExcelHiColumnResponse
+            {
+                HiColumns = hiColumns
+            };
+        }
     }
 }

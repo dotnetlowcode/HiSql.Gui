@@ -1,18 +1,20 @@
+﻿import { getDashboardUrl } from '@/router';
 import {
   getDashboardCharts,
+  getDashboardInfo,
   getTableDashboard,
   GridLayoutItem,
   saveChartPosition,
 } from '@/serverApi/chartAPIs';
+import { getSearchColumns, searchParamToWhereJson } from '@/serverApi/dataHelper';
 import { HiChartDashboardEntity } from '@/serverApi/models/chartModel/HiDashboardEntity';
-import { ChartDataModel } from './chartHelper/ichart';
+import { ColumnStruct, fieldSortFun } from '@/serverApi/models/columnStruct';
 import { TableGetColumnsRequest } from '@/serverApi/request/table/tableGetColums';
 import { apiError, getTableColumns } from '@/serverApi/tableInfoAPIs';
-import { ColumnStruct, fieldSortFun } from '@/serverApi/models/columnStruct';
-import { getSearchColumns, searchParamToWhereJson } from '@/serverApi/dataHelper';
+
 import { SearchFromVue } from '../columsTypes/searchFrom/searchFromViewModel';
+import { ChartDataModel } from './chartHelper/ichart';
 import { ChartShowVue } from './chartShow/chartShowViewModel';
-import { getDaahboardUrl as getDashboardUrl } from '@/router';
 
 import { Dictionary } from '@/helper/arrayHelper';
 
@@ -60,7 +62,7 @@ export class DashboardViewModelBase {
 }
 
 export class TableChartViewModel extends DashboardViewModelBase {
-  constructor(tableName: string) {
+  constructor(tableName: string, public DashboardId: string = ``) {
     super();
     this.TableName = tableName;
   }
@@ -71,13 +73,25 @@ export class TableChartViewModel extends DashboardViewModelBase {
 
   Dashboard: HiChartDashboardEntity = new HiChartDashboardEntity();
 
+  TempTableName = ``;
+
   /**
    * 分享地址
    */
   SharedUrl = ``;
 
   async Init() {
-    this.Dashboard = await getTableDashboard(this.TableName);
+    if (this.TableName) {
+      this.Dashboard = await getTableDashboard(this.TableName);
+    } else if (this.DashboardId) {
+      const tempObj = await getDashboardInfo({ dashboardId: this.DashboardId });
+      if (!tempObj) {
+        throw `看板不存在!`;
+      }
+      this.Dashboard = tempObj;
+      // eslint-disable-next-line no-self-assign
+      this.TableName = tempObj.TableName;
+    }
     const sharedUrlStr = getDashboardUrl(this.Dashboard.DBId);
     // eslint-disable-next-line no-restricted-globals
     this.SharedUrl = `${location.origin}${location.pathname}#${sharedUrlStr}`;
@@ -168,11 +182,22 @@ export class TableChartViewModel extends DashboardViewModelBase {
 
   SearchFromObj?: SearchFromVue;
 
-  // 搜索
+  /**
+   * 搜索
+   * @param searchParam
+   */
   SearchFrom(searchParam: Dictionary<string, any>) {
     const searchWhere = searchParamToWhereJson(this.TableFields, searchParam);
     for (const key in this.domMap) {
       this.domMap[key]?.reload(searchWhere);
     }
+  }
+
+  /**
+   * 新增图表
+   */
+  AddNewChart() {
+    this.ShowAddChart = true;
+    this.EditChartId = '';
   }
 }

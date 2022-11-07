@@ -62,7 +62,7 @@ const formData: Ref<{
 const rules: { [key: string]: Array<any> } = {};
 const fromFields = reactive<Array<ColumnsRenderParam>>([]);
 (() => {
-  // debugger;
+  //
   // console.info(`tabColumnData`);
   // console.info(props.tabColumnData);
   formData.value = { ...props.tabColumnData };

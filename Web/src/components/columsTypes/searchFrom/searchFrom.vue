@@ -48,7 +48,7 @@ const props = defineProps({
 const fromFields = reactive<Array<ColumnsRenderParam>>([]);
 const { searchParamModel, newSearchColumns } = getSearchParamModel(props.searchColumnsStruct);
 (() => {
-  // debugger;
+  //
   formData.value = { ...searchParamModel };
   // 初始化表单验证规则,目前只加了非空验证,后续可以增加其他规则
   for (let index = 0; index < newSearchColumns.length; index++) {
@@ -75,6 +75,7 @@ defineExpose<SearchFromVue>({
       }
     }
     emits(`search`, paramResult);
+    return paramResult as any;
   },
 });
 console.log(props);

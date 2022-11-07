@@ -8,25 +8,35 @@
     <div class="wrapPanel">
       <div class="cardInfo">
         <div class="cHeader">
-          <div class="text-16px flex justify-start items-center">
-            <span class="mr-10px" v-text="viewModel.isAddTableModel ? `新建表名:` : `表名:`" />
-            <template v-if="viewModel.isAddTableModel">
-              <div>
-                <a-input v-model:value="viewModel.tableName" placeholder="请输入纯英文表名..." />
+          <div class="flex">
+            <div>
+              <div class="flex flex-row">
+                <span class="mr-10px">表名:</span>
+                <span v-text="viewModel.tableInfo.TabProps.TabName" />
               </div>
-              <a-checkbox
-                v-model:checked="viewModel.addDefaultField"
-                class="!ml-10px"
-                @change="addDefaultFieldChange"
-              >
-                添加标准字段
-              </a-checkbox>
-            </template>
-            <template v-else>
-              <span v-text="viewModel.tableName" />
+              <div class="flex flex-row">
+                <span class="mr-10px">描述:</span>
+                <span v-text="viewModel.tableInfo.TabProps.TabDescript" />
+              </div>
+            </div>
+            <template v-if="viewModel.isAddTableModel">
+              <div class="text-16px flex justify-start align-top">
+                <a-checkbox
+                  v-model:checked="viewModel.addDefaultField"
+                  class="!ml-10px"
+                  @change="
+                    () => {
+                      viewModel.refreshData();
+                    }
+                  "
+                >
+                  添加标准字段
+                </a-checkbox>
+              </div>
             </template>
           </div>
-          <div class="flex w-300px justify-end">
+
+          <div class="flex w-500px justify-end">
             <a-button
               v-if="!isViewApi"
               class="mr-10px"
@@ -36,6 +46,21 @@
               <PlusCircleOutlined />
               增加列
             </a-button>
+            <a-upload
+              v-if="!isViewApi"
+              name="file"
+              class="block mr-10px"
+              :headers="viewModel.GetPostHeader()"
+              :multiple="false"
+              :action="viewModel.PostUrl"
+              @change="uploadChange"
+            >
+              <a-button>
+                <hiIcon :icon-name="`icon-exportexcel`"></hiIcon>
+                Excel导入列
+              </a-button>
+              <template #itemRender></template>
+            </a-upload>
             <h-ref-table
               v-if="!isViewApi"
               :hide-select-value="true"
@@ -51,11 +76,10 @@
                 复制表列
               </a-button>
             </h-ref-table>
-
-            <!-- <a-button v-if="!isViewApi" @click="openTableSetting">
+            <a-button v-if="!isViewApi" class="mr-10px" @click="openTableSetting">
               <setting-outlined key="setting" />
               设置
-            </a-button> -->
+            </a-button>
             <a-button :disabled="!viewModel.tableHasChange" @click="saveTableInfo()">
               <hi-icon class="text-16px" icon-name="icon-baocun1" />
               {{ saveBtnText }}
@@ -128,7 +152,20 @@
                       ></span>
                     </td>
                     <td class="tdA" @click.stop @dblclick="openEditCell(colData, `FieldType`)">
-                      <a-select
+                      <columnsRender
+                        v-if="
+                          editCell.rowObj == colData &&
+                          editCell.field == `FieldType` &&
+                          viewModel.getfieldTypeColumnStruct(colData)
+                        "
+                        :param="viewModel.filedColumnFieldTypeMap[colData.FieldName]"
+                        @change="
+                          (v:any) => {
+                            viewModel.setObjProp(colData, 'FieldType', v);
+                          }
+                        "
+                      />
+                      <!-- <a-select
                         v-if="editCell.rowObj == colData && editCell.field == `FieldType`"
                         v-model:value="colData.FieldType"
                         class="w-130px"
@@ -142,7 +179,7 @@
                         >
                           {{ typeObj.text }}
                         </a-select-option>
-                      </a-select>
+                      </a-select>-->
                       <span v-else v-text="DataBaseType[colData.FieldType]" />
                     </td>
                     <td v-if="!isViewApi" class="tdB">
@@ -212,18 +249,31 @@
         :tab-column-data="fromEditColumnObj"
         :closable="true"
         :is-add-table="viewModel.isAddTableModel"
+        :field-group-name="fieldGroupName"
       />
     </a-drawer>
-    <!-- <a-drawer
-      v-model:visible="showFromEdit"
-      width="600"
-      :title="fromEditTitle"
-      placement="right"
-      :closable="true"
-    >
-      <a-input v-model:value="viewModel.tableName" placeholder="请输入表名..." />
-    </a-drawer> -->
   </template>
+  <a-modal
+    v-model:visible="viewModel.showTableBaseInfoPanel"
+    title="表基本信息"
+    :mask-closable="false"
+    :keyboard="false"
+    @cancel="cancelTableBase"
+    @ok="saveTableBase"
+  >
+    <div class="flex justify-start items-center mb-10px">
+      <div class="mr-10px w-70px">表名:</div>
+      <div>
+        <a-input v-model:value="viewModel.tableName" placeholder="只能是英文和下划线组成..." />
+      </div>
+    </div>
+    <div class="flex justify-start items-center">
+      <div class="mr-10px w-70px">表中文名:</div>
+      <div>
+        <a-input v-model:value="viewModel.tabDescript" placeholder="请填写中文表名..." />
+      </div>
+    </div>
+  </a-modal>
 </template>
 <script lang="ts" setup>
 import {
@@ -232,17 +282,22 @@ import {
   PlusCircleOutlined,
   EditOutlined,
 } from '@ant-design/icons-vue';
-import { message } from 'ant-design-vue';
+import { message, UploadChangeParam, UploadFile } from 'ant-design-vue';
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
+import pagination from 'ant-design-vue/es/pagination';
 import FromEdit from '../columsTypes/fromEdit/fromEdit.vue';
 import TableDetailViewModel, { dataTypes, SelectTable } from './tableStructViewModel';
 import { ColumnStruct } from '../../serverApi/models/columnStruct';
 import { DataBaseType } from '../columsTypes/fromEdit/fromEditViewModel';
 import CheckBox from '../columsTypes/checkBox.vue';
-import { store } from '@/store';
 import tableFieldMap from '../tableFieldMap/tableFieldMap.vue';
 import hiIcon from '../Icon/hiIcon.vue';
+import ApiResultModel from '@/serverApi/apiModels/apiResultModel';
+import { ExcelHiColumnResponse } from '@/serverApi/models/tableModel/hiGetExcelColumn';
+import { pageSignPiniaStore } from '@/store/pageSignPiniaStore';
+import columnsRender from '../columsTypes/columnsRender/columnsRender.vue';
 
+const pageStore = pageSignPiniaStore();
 const emits = defineEmits([`createNewTable`, `tableChange`]);
 const showFromEdit = ref(false);
 const fromEditTitle = ref(``);
@@ -270,9 +325,7 @@ const editCell = reactive({
   field: ``,
 });
 const viewModel = reactive(new TableDetailViewModel(props.tableName, props.isViewApi));
-const addDefaultFieldChange = () => {
-  viewModel.refreshData();
-};
+
 // const searchColumns: ColumnStruct[] = reactive([]);
 
 // const checkBoxChange = (colData: any, filedName: string, v: any, v2: any) => {
@@ -282,22 +335,26 @@ const openEditCell = (colData: any, fieldName: string) => {
   editCell.rowObj = colData;
   editCell.field = fieldName;
 };
+const fieldGroupName = ref(``);
 let saveFun: (rowData: any) => Promise<void> = async () => {};
-// const openTableSetting = () => {
-//   showFromEdit.value = true;
-//   fromEditTitle.value = `表属性`;
-//   fromEditPropStruct.length = 0;
-//   saveFun = (rowData: any) => {
-//     return viewModel.saveRowData(rowData);
-//   };
-//   fromEditPropStruct.push(...(viewModel.tableInfo?.TabPropStruct ?? []));
-//   fromEditColumnObj.value = unref(viewModel.tableInfo?.TabProps ?? {});
-//   console.info(showFromEdit.value);
-// };
+const openTableSetting = () => {
+  showFromEdit.value = true;
+  fromEditTitle.value = `表属性`;
+  fieldGroupName.value = ``;
+  fromEditPropStruct.length = 0;
+  saveFun = async (rowData: any) => {
+    Object.assign(viewModel.tableInfo.TabProps, rowData);
+  };
+  fromEditPropStruct.push(...(viewModel.tableInfo?.TabPropStruct ?? []));
+  fromEditColumnObj.value = unref(viewModel.tableInfo?.TabProps ?? {});
+  console.info(showFromEdit.value);
+};
+
 const openColumnSetting = (record: ColumnStruct | null) => {
   const newColumnObj = new ColumnStruct();
-  debugger;
+
   let isAdd = false;
+  fieldGroupName.value = `FieldGroup`;
   if (record == null) {
     isAdd = true;
     newColumnObj.TabName = viewModel.tableName;
@@ -305,7 +362,6 @@ const openColumnSetting = (record: ColumnStruct | null) => {
     record = newColumnObj;
   }
   saveFun = async (rowData: ColumnStruct) => {
-    debugger;
     if (isAdd) {
       viewModel.tableInfo?.TabColumns.push(rowData);
       viewModel.refreshData();
@@ -314,6 +370,11 @@ const openColumnSetting = (record: ColumnStruct | null) => {
     }
     viewModel.tableHasChange = true;
   };
+  showFromEdit.value = false;
+  // eslint-disable-next-line no-undef
+  nextTick(() => {
+    showFromEdit.value = true;
+  });
   showFromEdit.value = true;
   fromEditTitle.value = `列属性`;
   fromEditPropStruct.length = 0;
@@ -359,13 +420,29 @@ const saveTableInfo = async () => {
 };
 const saveFrom = async () => {
   const columnData = await viewModel.FromEditObj?.Save();
-  debugger;
+
   if (columnData) {
     showFromEdit.value = false;
     await saveFun(columnData);
   }
 };
-
+const saveTableBase = () => {
+  if (viewModel.tableName.length > 0 && viewModel.tabDescript.length > 0) {
+    viewModel.showTableBaseInfoPanel = false;
+    viewModel.tableInfo.TabProps.TabName = viewModel.tableName;
+    viewModel.tableInfo.TabProps.TabDescript = viewModel.tabDescript;
+    return;
+  }
+  if (!/[a-zA-Z-_0-9]{1,}/.test(viewModel.tableName)) {
+    message.error('表名只能由字母数字和中下划线组成!');
+    return;
+  }
+  message.warn('请填写表名和表描述!');
+};
+const cancelTableBase = () => {
+  window.history.go(-1);
+  pageStore.removeLastTab(pageStore.$state);
+};
 viewModel
   .load()
   .catch(err => {
@@ -373,7 +450,22 @@ viewModel
   })
   .finally(() => {
     viewModel.isLoading = false;
+    if (!viewModel.tableName) {
+      viewModel.showTableBaseInfoPanel = true;
+    }
   });
+
+const uploadChange = (r: UploadChangeParam<UploadFile<ApiResultModel<ExcelHiColumnResponse>>>) => {
+  const resp = r.file.response;
+  if (resp && resp?.StatusCode !== 0) {
+    message.error(resp?.ErrorMessage);
+    return;
+  }
+  if (resp && (resp?.Data?.HiColumns?.length ?? 0) > 0) {
+    viewModel.addDefaultField = false;
+    viewModel.addNewColumns(resp.Data?.HiColumns ?? [], true);
+  }
+};
 </script>
 
 <style lang="less" scoped>
@@ -391,7 +483,7 @@ viewModel
     width: 100%;
     height: 100%;
     border-top: solid 1px @tablebordercolor;
-
+    min-width: 1070px;
     .td0 {
       width: 30px;
     }
@@ -443,7 +535,7 @@ viewModel
     overflow-y: auto;
     border-right: solid 1px @tablebordercolor;
     border-bottom: solid 1px @tablebordercolor;
-
+    height: calc(100vh - 280px);
     .editable-cell-icon {
       cursor: pointer;
       margin-right: 10px;
@@ -475,10 +567,10 @@ viewModel
   @headHeight: 40px;
 
   .cHeader {
-    height: @headHeight;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    padding-bottom: 10px;
   }
 
   .cBody {

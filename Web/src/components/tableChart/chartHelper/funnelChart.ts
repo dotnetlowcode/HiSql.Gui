@@ -1,12 +1,7 @@
 import * as echarts from 'echarts';
 import { EChartsOption } from 'echarts';
 
-import {
-  ChartParam,
-  ChartType,
-  IChart,
-  RegisterIChart,
-} from './ichart';
+import { ChartParam, ChartType, IChart, RegisterIChart } from './ichart';
 
 export class FunnelChart extends IChart {
   constructor(param: ChartParam) {
@@ -49,6 +44,9 @@ export class FunnelChart extends IChart {
         break;
       }
     }
+    yArray.sort((objA, objB) => {
+      return objA.value - objB.value;
+    });
     const chartOption: EChartsOption = {
       title: {
         text: option.title || '漏斗图',

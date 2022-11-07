@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import * as echarts from 'echarts';
 import escapeStringRegexp from 'escape-string-regexp';
 
@@ -49,6 +50,10 @@ export abstract class IChart {
 
   PropertyRenderFields: Array<ColumnsRenderParam> = [];
 
+  SqlWhere = ``;
+
+  SqlWhereParam: Dictionary<string, any> = {};
+
   /**
    * 设置图表属性
    * @param fields
@@ -76,6 +81,7 @@ export abstract class IChart {
     groupFields: Array<{
       fieldName: string;
       showText: string;
+      format: string;
     }>,
     calcFields: Array<{
       fieldName: string;
@@ -90,10 +96,22 @@ export abstract class IChart {
    */
   async Excute(tableName: string, searchParam: Dictionary<string, any>) {
     // do something
-    const groupByFields: Array<string> = [];
+    const groupByFields: Array<{
+      fieldName: string;
+      showText: string;
+      format: string;
+    }> = [];
     const valueFields: Array<string> = [];
     this.SelectDmsFields.forEach(f => {
-      groupByFields.push(f.FieldName);
+      const obj = {
+        fieldName: f.FieldName,
+        showText: f.FieldName, // 如果有映射值,就传映射值
+        format: ``,
+      };
+      if (f.FieldType === DataBaseType.date) {
+        obj.format = 'YYYY年MM月DD日'; // 格式化
+      }
+      groupByFields.push(obj);
       valueFields.push(f.FieldName);
     });
     const calcFields: Array<{
@@ -108,28 +126,46 @@ export abstract class IChart {
       });
       valueFields.push(`${f.SelectCalc}(${f.FieldName}) as ${tempFieldName}`);
     });
+    let whereStr = 'where ';
+    if (this.SqlWhere.length > 0) {
+      whereStr += this.SqlWhere;
+    } else {
+      whereStr = '';
+    }
     const sql = `select ${valueFields.join(
       `,`,
-    )} from ${tableName} $Where$ group by ${groupByFields.join(`,`)}`;
-    const result = await ApiTestExcute(sql, searchParam);
+    )} from ${tableName} ${whereStr} $Where$ group by ${groupByFields
+      .map(r => r.fieldName)
+      .join(`,`)}`;
+    debugger;
+    const result = await ApiTestExcute(sql, searchParam, {
+      hiSqlparam: this.SqlWhereParam,
+    });
     const rows = result.Data?.List ?? [];
+    const formatColumns = groupByFields.filter(r => r.format !== ``);
+    rows.forEach(row => {
+      formatColumns.forEach(formatColumn => {
+        row[formatColumn.fieldName] = dayjs(row[formatColumn.fieldName]).format(
+          formatColumn.format,
+        );
+      });
+    });
     // calcFields = this.ObjectTextReplace(calcFields);
     // groupByFields = this.ObjectTextReplace(groupByFields);
     this.disposeOldChart();
-    await this.DrawChart(
-      groupByFields.map(r => {
-        return {
-          fieldName: r,
-          showText: r, // 如果有映射值,就传映射值
-        };
-      }),
-      calcFields,
-      rows,
-      {
-        title: ``,
-        subTitle: ``,
-      },
-    );
+    debugger;
+    if (!groupByFields.length) {
+      throw '请添加X维度';
+      // message.warning(`请添加X维度`);
+    }
+    if (!calcFields.length) {
+      throw '请添加Y数值';
+      // message.warning(`请添加Y数值`);
+    }
+    await this.DrawChart(groupByFields, calcFields, rows, {
+      title: ``,
+      subTitle: ``,
+    });
   }
 
   /**
@@ -138,7 +174,6 @@ export abstract class IChart {
    * @returns
    */
   TranslateObj<T>(obj: T) {
-    debugger;
     let jsonStr = JSON.stringify(obj);
     for (const key in this.FieldMap) {
       const mapValue = this.FieldMap[key];

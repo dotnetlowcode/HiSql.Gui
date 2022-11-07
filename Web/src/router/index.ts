@@ -1,9 +1,10 @@
-import { createRouter, createWebHashHistory, createWebHistory } from 'vue-router';
+﻿import { createRouter, createWebHashHistory } from 'vue-router';
 
 import BlankLayout from '../layouts/BlankLayout.vue';
 import DataLayout from '../layouts/DataLayout.vue';
 
 const hasGithubPages = true; //= import.meta.env.VITE_GHPAGES;
+// hasGithubPages ? createWebHashHistory() : createWebHistory(),
 
 /**
  * 新增表格RouterName
@@ -41,14 +42,24 @@ export const tableDetailRouterName = `tableDetail`;
 export const dashboardSharedRouterName = `dashboardShared`;
 
 /**
+ * 看板详情
+ */
+export const dashboardDetail = 'DashboardDetail';
+
+/**
  * 登录页面
  */
 export const loginRouterName = 'login';
 
-export const getDaahboardUrl = (id = ':id') => {
+/**
+ * 新增看板
+ */
+export const dashboardAdd = 'DashboardAdd';
+
+export const getDashboardUrl = (id = ':id') => {
   return `/dashboard/shared/${id}`;
 };
-// hasGithubPages ? createWebHashHistory() : createWebHistory(),
+
 export default createRouter({
   history: createWebHashHistory(),
   routes: [
@@ -59,7 +70,7 @@ export default createRouter({
       component: () => import('../views/admins/page1.vue'),
     },
     {
-      path: getDaahboardUrl(),
+      path: getDashboardUrl(),
       name: dashboardSharedRouterName,
       meta: { title: '看板分享' },
       component: () => import('../views/hisql/shared/dashboardShared.vue'),
@@ -106,7 +117,10 @@ export default createRouter({
             {
               path: '/table/add',
               name: addTableRouterName,
-              meta: { title: '添加表' },
+              meta: {
+                title: '添加表',
+                keepAlive: false,
+              },
               component: () => import('../views/hisql/tableDetail/tableAdd.vue'),
             },
             {
@@ -213,6 +227,43 @@ export default createRouter({
               name: 'editExportExcel',
               meta: { title: '编辑Excel导出模板设定' },
               component: () => import('../views/hisql/exportExcel/exportExcel.vue'),
+            },
+          ],
+        },
+        // {
+        //   path: '/dashboard/detail/:id',
+        //   name: dashboardDetail,
+        //   meta: { title: '看板详情' },
+        //   component: () => import('../views/hisql/dashboard/detail.vue'),
+        // },
+        // {
+        //   path: '/dashboard/detail/add',
+        //   name: dashboardDetail,
+        //   meta: { title: '新增看板' },
+        //   component: () => import('../views/hisql/dashboard/detail.vue'),
+        // },
+        {
+          path: '/dashboard',
+          name: 'dashboard',
+          meta: {
+            title: '数据看板',
+          },
+          component: BlankLayout,
+          redirect: () => ({
+            name: dashboardAdd,
+          }),
+          children: [
+            {
+              path: '/dashboard/add',
+              name: dashboardAdd,
+              meta: { title: '新增看板' },
+              component: () => import('../views/hisql/dashboard/detail.vue'),
+            },
+            {
+              path: '/dashboard/:id',
+              name: dashboardDetail,
+              meta: { title: '看板详情' },
+              component: () => import('../views/hisql/dashboard/detail.vue'),
             },
           ],
         },

@@ -1,9 +1,12 @@
 <template>
-  <view-design />
+  <ViewDesignV2 />
 </template>
 <script lang="ts" setup>
 import { message } from 'ant-design-vue';
-import viewDesign from '@/components/viewDesign/viewDesign.vue';
+// import viewDesign from '@/components/viewDesign/viewDesign.vue';
+
+import viewDesignV2 from '@/components/viewDesign/v2/viewDesignV2.vue';
+
 import { TableViewAddViewModel } from './tableViewAddViewModel';
 
 // eslint-disable-next-line no-undef

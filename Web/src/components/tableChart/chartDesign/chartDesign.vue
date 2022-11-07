@@ -89,6 +89,17 @@
             </template>
           </draggable>
         </div>
+        <div class="dmsItem" style="height: auto; line-height: normal">
+          <whereTableV4
+            :ref="
+              (el: any) => {
+                 viewModel.whereTableV4 = el;
+              }"
+            :table-columns-struct="viewModel.DimensionFields"
+            :search-columns-struct="viewModel.DimensionFields"
+            @search="searchData"
+          />
+        </div>
         <div class="dmsItem">
           <span class="dmsTitle"></span>
           <span class="dmsIcon"></span>
@@ -185,6 +196,7 @@ import {
   DsmList,
   TableChartViewModel,
 } from './chartDesignViewModel';
+import whereTableV4 from '../../columsTypes/whereTableV4/whereTableV4.vue';
 
 const props = defineProps({
   tableName: {
@@ -216,7 +228,14 @@ const viewModel = reactive(
   }),
 );
 viewModel.Init();
-
+const searchData = async (searchParam: any) => {
+  // showSearchFromEdit.value = false;
+  // // viewModel.setSearchData(searchParam);
+  // viewModel.searchHiParamObj = searchParam;
+  // if (loadPage != null) {
+  //   await loadPage(1, pagination.pageSize);
+  // }
+};
 const cloneValueField = (sourcesObj: ColumnStruct) => {
   return ColumnStructToDimensionField(sourcesObj);
 };

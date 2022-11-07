@@ -1,13 +1,17 @@
+import { Dictionary } from '@/helper/arrayHelper';
+
 export class ApiTestExcuteRequest {
   HiSql = ``;
 
-  Params: { [key: string]: string } = {};
+  Params: Dictionary<string, string> = {};
 
   PageSize = 20;
 
   PageIndex = 1;
 
   OrderByField = ``;
+
+  HiSqlWhereParam: Dictionary<string, any> = {};
 }
 export class ApiTestExcuteResponse {
   /**

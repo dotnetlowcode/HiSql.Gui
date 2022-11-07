@@ -103,7 +103,10 @@ import { useRouter } from 'vue-router';
 import { userLogin } from '@/serverApi/request/oauth';
 import serverApiClient from '@/serverApi/httpClient';
 import { store } from '@/store';
+import { clearUserAuth, refreshUserAuth } from '@/components/authority/authorityViewModel';
+import { pageSignPiniaStore } from '@/store/pageSignPiniaStore';
 
+const pageSign = pageSignPiniaStore();
 interface FormState {
   username: string;
   password: string;
@@ -142,11 +145,16 @@ const onSubmit = () => {
         message.error(loginResult.ErrorMessage);
         return;
       }
+
       serverApiClient.SetTokenResult(loginResult.Data?.AccessToken);
+      await refreshUserAuth();
       // 清空缓存页签
-      store.commit('clearTabs');
-      store.commit('setCurrentTab', {});
-      store.commit('setCurrentMenuType', '');
+      // store.commit('clearTabs');
+      // store.commit('setCurrentTab', {});
+      // store.commit('setCurrentMenuType', '');
+      pageSign.clearTabs(pageSign.$state, []);
+      pageSign.setCurrentTab(pageSign.$state, {});
+      pageSign.setCurrentMenuType(pageSign.$state, '');
       localStorage.removeItem('tableSimpleNameListKey'); // 清除左侧表名描述缓存
       route.push({ name: `tableDetail`, params: { tableName: `Hi_TabModel` } });
     })

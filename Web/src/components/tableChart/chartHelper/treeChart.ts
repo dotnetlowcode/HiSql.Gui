@@ -58,7 +58,7 @@ export const SelectTable3: ColumnStruct = ColumnStruct.GetColumnStruct({
 export class TreeChart extends IChart {
   constructor(param: ChartParam) {
     super(param);
-    debugger;
+
 
     ///
     SelectTable.RefWhere = `TabName='${param.tableName}'`;
@@ -126,16 +126,27 @@ export class TreeChart extends IChart {
       subTitle?: string | undefined;
     },
   ): Promise<void> {
-    debugger;
+
+
+    if (groupFields.length < 3) {
+      throw 'X维度需要3项';
+      // message.warning(`X维度需要3项`);
+      return;
+    }
+    if (!this.PropValue.ID || !this.PropValue.Name || !this.PropValue.ParentID) {
+      throw '需要配置图表属性';
+      // message.warning(`需要配置图表属性`);
+      return;
+    }
     const treeData = this.arrToTree(
       rows,
       this.PropValue.ID,
       this.PropValue.Name,
-      calcFields[0].fieldName,
+      calcFields[0]?.fieldName || '',
       this.PropValue.ParentID,
     );
     // this.SelectValueFields[0].FieldName
-    debugger;
+
     const chartOption: EChartsOption = {
       tooltip: {
         trigger: 'item',

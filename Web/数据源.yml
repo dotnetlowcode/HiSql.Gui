@@ -60,6 +60,12 @@
     删除-delete-Hi_ModuleTypeOperate
     编辑-edit-Hi_ModuleTypeOperate
 
+数据看板-hiDashboard-Hi_Module
+  看板列表-list-Hi_Module
+    新增-add-Hi_ModuleTypeOperate
+    删除-delete-Hi_ModuleTypeOperate
+    编辑-edit-Hi_ModuleTypeOperate
+
 超级管理员-superAdmin-Hi_Role
 系统管理员-systemAdmin-Hi_Role
   开发部门-devGroup-Hi_Group

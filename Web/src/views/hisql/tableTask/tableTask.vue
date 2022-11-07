@@ -4,7 +4,6 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router';
 import tableTaskCreate from '@/components/tableTask/tableTaskCreate.vue';
-import { addTableTaskRouterName } from '@/router/index';
 // eslint-disable-next-line no-undef
 const route = useRoute();
 

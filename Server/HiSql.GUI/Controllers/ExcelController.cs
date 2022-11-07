@@ -43,27 +43,5 @@ namespace HiSql.GUI.Controllers
         }
 
 
-
-
-
-        //[Route("hidata/api/excel/save")]
-        //[HttpPost]
-        //[EnableCors("HiDataCors")]
-        //public async Task<ApiResultModel<ExcelExportSaveResponse>> SaveExportExcel([FromBody] ExcelExportSaveRequest request)
-        //{
-        //    var resp = await Service.SaveExportExcel(request);
-        //    return ApiResultModel.Success(resp);
-        //}
-
-
-
-        [Route("hidata/api/excel/test")]
-        [HttpGet]
-        [EnableCors("HiDataCors")]
-        public async Task<ApiResultModel<string>> Test()
-        {
-            await Service.Test();
-            return ApiResultModel.Success("OK");
-        }
     }
 }

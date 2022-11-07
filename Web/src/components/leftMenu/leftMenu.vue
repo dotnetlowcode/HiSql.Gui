@@ -1,4 +1,4 @@
-/* eslint-disable prefer-const */ /* eslint-disable no-redeclare */
+﻿/* eslint-disable prefer-const */ /* eslint-disable no-redeclare */
 <template>
   <div class="flex h-full">
     <div class="w-20 h-full pb-50px box-border relative">
@@ -36,6 +36,7 @@
             <authority-waper
               :res-id="viewModel.SelectResId"
               :operate-id="viewModel.SelectOperateId"
+              :hide-panel="true"
             >
               <a-button
                 class="float-right bg-[#F3F3F3] border-0"
@@ -73,9 +74,9 @@
             @click="goPage(viewModel.SelectTreeItem, item)"
             @mouseenter="getTableSimpleName(viewModel.SelectTreeItem, item)"
           >
-            <hi-icon class="text-xl" icon-name="icon-a-HiSqlGUIICON_shujubiao-xiankuang"></hi-icon>
+            <!-- <hi-icon class="text-xl" icon-name="icon-a-HiSqlGUIICON_shujubiao-xiankuang"></hi-icon> -->
             <span
-              class="overflow-ellipsis overflow-hidden inline-block w-[calc(100%-30px)]"
+              class="overflow-ellipsis overflow-hidden inline-block w-[calc(100%-30px)] whitespace-nowrap"
               v-text="item.Name"
             />
           </div>
@@ -159,11 +160,12 @@ import { useRouter } from 'vue-router';
 import { LeftMenuViewModel, dataItem, ModuleItem, SelectItemType } from './leftMenuViewModel';
 import { MyIcon } from '@/components/Icon/hiIconViewModel';
 import { store } from '@/store';
-import pageSignStore, { PageSignItem } from '@/store/model/pageSignStore';
 import { getTableSimple } from '../../serverApi/tableInfoAPIs';
 import config from '@/serverApi/config';
 import authorityWaper from '../authority/authorityWaper.vue';
+import { PageSignItem, pageSignPiniaStore } from '@/store/pageSignPiniaStore';
 
+const pageSign = pageSignPiniaStore();
 const isSettingManagement = ref(false);
 // eslint-disable-next-line no-undef
 const props = defineProps({
@@ -184,15 +186,16 @@ const pageSizeOptions = ref<string[]>(['10', '20', '30', '40', '50']);
 const router = useRouter();
 const viewModel = reactive(new LeftMenuViewModel());
 viewModel.init();
-window.v = viewModel;
 watch(
   () => props.propSelectItem,
   v => {
     // 页签点击跳转
     if (props.propSelectItem) {
       viewModel.SelectItem = props.propSelectItem as dataItem;
-      if (props.propSelectItem.Name.indexOf('_新增') < 0) {
-        const CurrentTab = store.getters.getCurrentTab();
+      if (props.propSelectItem.Name && props.propSelectItem.Name.indexOf('_新增') < 0) {
+        // const CurrentTab = store.getters.getCurrentTab();
+
+        const CurrentTab = pageSign.getCurrentTab();
         if (CurrentTab.Content) {
           viewModel.SetSelectTreeItemByName((CurrentTab.Content as ModuleItem).Name);
         }
@@ -219,8 +222,17 @@ watch(
   },
   { deep: true },
 );
+// watch(
+//   () => store.getters.getCurrentTab(),
+//   v => {
+//     if (Object.keys(v).length === 0) {
+//       viewModel.SelectItem = {};
+//     }
+//   },
+//   { deep: true },
+// );
 watch(
-  () => store.getters.getCurrentTab(),
+  () => pageSign.getCurrentTab(),
   v => {
     if (Object.keys(v).length === 0) {
       viewModel.SelectItem = {};
@@ -233,8 +245,15 @@ watch(viewModel.SelectTreeItem, () => {
   viewModel.SelectOperateId = viewModel.SelectTreeItem.AuthConfig.Add.OperateId;
 });
 // F5刷新后赋值缓存选中的二级菜单
-if (store.getters.getCurrentTab()) {
-  const CurrentTab = store.getters.getCurrentTab();
+// if (store.getters.getCurrentTab()) {
+//   const CurrentTab = store.getters.getCurrentTab();
+//   if (CurrentTab.Content) {
+//     viewModel.SetSelectTreeItemByName((CurrentTab.Content as ModuleItem).Name);
+//   }
+//   viewModel.SelectItem = CurrentTab;
+// }
+if (pageSign.getCurrentTab()) {
+  const CurrentTab = pageSign.getCurrentTab();
   if (CurrentTab.Content) {
     viewModel.SetSelectTreeItemByName((CurrentTab.Content as ModuleItem).Name);
   }
@@ -277,15 +296,20 @@ const getTableSimpleName = async (treeItem: ModuleItem, item: dataItem) => {
     currentTableSimple.value = item.Name;
   }
 };
+
 const changeTreeItem = (treeItem: ModuleItem) => {
   viewModel.SelectTreeItem = treeItem;
   // Object.assign(viewModel.SelectTreeItem, treeItem);
   // 设置菜单给页签作为类型
-  store.commit('setCurrentMenuType', treeItem.Name);
+  // store.commit('setCurrentMenuType', treeItem.Name);
+  pageSign.setCurrentMenuType(pageSign.$state, treeItem.Name);
   let currentTab = {} as dataItem;
-  if (store.getters.getTabsMenues().length > 0) {
+  // if (store.getters.getTabsMenues().length > 0) {
+
+  const tabsMenues: any = pageSign.getTabsMenues('');
+  if (tabsMenues.length > 0) {
     // eslint-disable-next-line prefer-destructuring
-    currentTab = store.getters.getTabsMenues()[0];
+    currentTab = tabsMenues[0];
   } else {
     // eslint-disable-next-line no-lonely-if
     if (treeItem.Childrens.length > 0) {
@@ -293,14 +317,16 @@ const changeTreeItem = (treeItem: ModuleItem) => {
       currentTab = treeItem.Childrens[0];
     } else {
       total.value = 0;
-      store.commit('setCurrentTab', {});
+      // store.commit('setCurrentTab', {});
+
+      pageSign.setCurrentTab(pageSign.$state, {});
       router.push({ name: 'emptypage' });
       return;
     }
   }
   // eslint-disable-next-line prettier/prettier
-  store.commit('setCurrentTab', currentTab);
-
+  // store.commit('setCurrentTab', currentTab);
+  pageSign.setCurrentTab(pageSign.$state, currentTab);
   const obj = {
     Name: '',
     Id: '',
@@ -320,7 +346,10 @@ const goPage = (treeItem: ModuleItem, item: dataItem) => {
   if (!treeItem) {
     return;
   }
-  store.commit('setCurrentMenuType', treeItem.Name);
+  // store.commit('setCurrentMenuType', treeItem.Name);
+
+  pageSign.setCurrentMenuType(pageSign.$state, treeItem.Name);
+
   // eslint-disable-next-line no-use-before-define
   addPageSign(item, treeItem);
   viewModel.SelectItem = item;
@@ -334,8 +363,12 @@ const goPage = (treeItem: ModuleItem, item: dataItem) => {
  * 添加页签
  */
 const addPageSign = (item: { Name: string; Id: string }, treeItem: ModuleItem) => {
-  const lst: Array<PageSignItem> = pageSignStore.state.tabsMenues.filter(
-    (x: { Type: any }) => x.Type === pageSignStore.state.currentMenuType,
+  // const lst: Array<PageSignItem> = pageSignStore.state.tabsMenues.filter(
+  //   (x: { Type: any }) => x.Type === pageSignStore.state.currentMenuType,
+  // );
+  debugger;
+  const lst: Array<PageSignItem> = pageSign.tabsMenues.filter(
+    (x: { Type: any }) => x.Type === pageSign.currentMenuType,
   );
 
   const pageSignItem = new PageSignItem();
@@ -345,10 +378,11 @@ const addPageSign = (item: { Name: string; Id: string }, treeItem: ModuleItem) =
   pageSignItem.Content = treeItem;
   pageSignItem.Data = {};
   if (lst && lst.length < config.MaxTabsLength) {
-    store.commit('addTabs', pageSignItem);
+    // store.commit('addTabs', pageSignItem);
+    pageSign.addTabs(pageSign.$state, pageSignItem);
   }
-
-  store.commit('setCurrentTab', pageSignItem);
+  // store.commit('setCurrentTab', pageSignItem);
+  pageSign.setCurrentTab(pageSign.$state, pageSignItem);
 };
 
 const search = (treeItem: ModuleItem) => {
@@ -376,9 +410,13 @@ const openAdd = (treeItem: ModuleItem) => {
   // eslint-disable-next-line prefer-template
   obj.Id = treeItem.AddRouterName;
   addPageSign(obj, treeItem);
-  store.commit('setCurrentMenuType', treeItem.Name);
-  store.commit('setCurrentTab', obj);
-  viewModel.SelectItem = store.getters.getCurrentTab();
+  // store.commit('setCurrentMenuType', treeItem.Name);
+  // store.commit('setCurrentTab', obj);
+  // viewModel.SelectItem = store.getters.getCurrentTab();
+  debugger;
+  pageSign.setCurrentMenuType(pageSign.$state, treeItem.Name);
+  pageSign.setCurrentTab(pageSign.$state, obj);
+  viewModel.SelectItem = pageSign.getCurrentTab();
 };
 
 // 打开设置管理
@@ -415,6 +453,8 @@ const closedSettingManagement = () => {
   margin: 0 8px;
   border-radius: 4px;
   color: #191919;
+  width: 100%;
+  box-sizing: border-box;
 
   & > span.anticon {
     color: #5c5c5d;

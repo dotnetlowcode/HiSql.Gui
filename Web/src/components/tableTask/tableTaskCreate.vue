@@ -75,7 +75,7 @@
           <div class="blockItem">
             <span class="blockTitle">表名：</span>
             <div class="blockContent">
-              <a-input v-model:value="viewModel.TaskInfo.APIUrl">
+              <a-input v-model:value="viewModel.TaskInfo.StoreName">
                 <template v-if="viewModel.TaskInfo.StoreType == 'NewCreate'" #addonAfter>
                   <a-select v-model:value="viewModel.TaskInfo.SotreFormat" style="width: 100px">
                     <a-select-option value="yyyy_MM_dd">精确到日</a-select-option>

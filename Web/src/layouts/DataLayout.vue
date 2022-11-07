@@ -35,7 +35,7 @@ import dbVersion from '@/components/database/dbVersion.vue';
 const router = useRouter();
 const selectItem = ref<SelectItemType>({});
 const updateSelectItem = (data: any) => {
-  debugger;
+
   selectItem.value = data;
 };
 
@@ -123,7 +123,7 @@ onMounted(() => {
   dragControllerDiv();
 });
 // function select(name: string, type: string, data: any) {
-//   debugger;
+//
 //   // 路由跳转
 //   if (type === 'table') {
 //     router.push({

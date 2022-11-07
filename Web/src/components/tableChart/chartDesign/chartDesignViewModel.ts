@@ -1,33 +1,23 @@
 import { List } from 'linqts';
 
-import {
-  DataBaseType,
-  IsNumberColumn,
-} from '@/components/columsTypes/fromEdit/fromEditViewModel';
+import { IsNumberColumn } from '@/components/columsTypes/fromEdit/fromEditViewModel';
 import { typeFieldMapVue } from '@/components/tableFieldMap/tableFieldMapViewModel';
-import {
-  getChartInfo,
-  saveChartInfo,
-} from '@/serverApi/chartAPIs';
-import {
-  ChartTypeName,
-  HiChartEntity,
-} from '@/serverApi/models/chartModel/HiChartEntity';
-import {
-  DMSKey,
-  HiChartFieldEntity,
-} from '@/serverApi/models/chartModel/HiChartFieldEntity';
+import { getChartInfo, saveChartInfo } from '@/serverApi/chartAPIs';
+import { ChartTypeName, HiChartEntity } from '@/serverApi/models/chartModel/HiChartEntity';
+import { DMSKey, HiChartFieldEntity } from '@/serverApi/models/chartModel/HiChartFieldEntity';
 import { ColumnStruct } from '@/serverApi/models/columnStruct';
 import { TableGetColumnsRequest } from '@/serverApi/request/table/tableGetColums';
-import {
-  apiError,
-  getTableColumns,
-} from '@/serverApi/tableInfoAPIs';
+import { apiError, getTableColumns } from '@/serverApi/tableInfoAPIs';
 
 import { CategoryChartType } from '../chartHelper/categoryChart';
 import { DigitalChartType } from '../chartHelper/digitalChart/digitalChart';
 import { FunnelChartType } from '../chartHelper/funnelChart';
 import { GaugeChartType } from '../chartHelper/gaugeChart';
+import { GraphChartType } from '../chartHelper/graphChart';
+import { Dictionary } from '../../../helper/arrayHelper';
+import { WhereTableV4 } from '@/components/columsTypes/whereTableV4/dataSearchViewModel';
+
+// eslint-disable-next-line prettier/prettier
 import {
   calcType,
   ChartType,
@@ -42,6 +32,7 @@ import { RadarChartType } from '../chartHelper/radarChart';
 import { ScatterChartType } from '../chartHelper/scatterChart';
 import { TableChartType } from '../chartHelper/tableChart/tableChart';
 import { TreeChartType } from '../chartHelper/treeChart';
+import { queryTableField } from '@/serverApi/tableDataAPIs';
 
 export const ChartTypes: Array<ChartType> = [
   DigitalChartType,
@@ -59,6 +50,7 @@ export const ChartTypes: Array<ChartType> = [
   ScatterChartType,
   ParallelChartType,
   TreeChartType,
+  GraphChartType,
   // {
   //   Title: `完成率`,
   //   TypeName: `Gauge`,
@@ -106,11 +98,6 @@ export const DsmList: Array<{
     Title: `Y数值`,
     BindPropName: `SelectValueFields`,
   },
-  // {
-  //   Id: `F`,
-  //   Title: `筛选条件`,
-  //   BindPropName: `SelectFilterFields`,
-  // },
 ];
 
 /**
@@ -177,7 +164,7 @@ export const HiChartFieldEntityToDimensionField = (
     IsNumber: isNumber,
     Calculation: isNumber ? calcList : [countFun],
     SelectCalc: fieldObj.CalcType, // 默认为计数
-    FieldType: isNumber ? DataBaseType.int : DataBaseType.nvarchar,
+    FieldType: fieldObj.FieldType,
   };
 };
 
@@ -256,6 +243,8 @@ export class TableChartViewModel {
 
   ChartObj?: IChart;
 
+  whereTableV4: WhereTableV4 | undefined;
+
   async SelectType(chartType: ChartTypeName) {
     this.MainChartObj.Type = chartType;
     if (!this.ChartMainDom) {
@@ -268,7 +257,7 @@ export class TableChartViewModel {
       fieldMap: {},
       tableName: this.MainChartObj.TableName,
     });
-    const pValue = JSON.parse(this.MainChartObj.ExtJson);
+    const pValue = JSON.parse(this.MainChartObj.ExtJson || '{}');
     for (const key in pValue) {
       const keyValue = pValue[key];
       this.ChartObj.PropValue[key] = keyValue;
@@ -359,6 +348,7 @@ export class TableChartViewModel {
         dbField.Dimension = dsmItem.Id;
         dbField.CreateTime = new Date();
         dbField.ModiTime = new Date();
+        dbField.FieldType = vField.FieldType;
         this.CharFields.push(dbField);
       });
     }
@@ -372,7 +362,6 @@ export class TableChartViewModel {
   TableFieldMapInstance?: typeFieldMapVue;
 
   DragAdd(p: any) {
-    debugger;
     console.log(p);
   }
 
@@ -392,9 +381,13 @@ export class TableChartViewModel {
     if (!this.ChartObj) {
       return;
     }
+
     const fieldMap = this.TableFieldMapInstance?.GetFieldMap() ?? {};
-    debugger;
+    const filterWhere = this.whereTableV4?.getFilterWhere();
+    const searchParam: Dictionary<string, any> = {};
+    this.ChartObj.SqlWhere = filterWhere?.Sql ?? '';
+    this.ChartObj.SqlWhereParam = filterWhere?.SqlParam ?? {};
     this.ChartObj.FieldMap = fieldMap;
-    await this.ChartObj?.Excute(this.MainChartObj.TableName, {});
+    await this.ChartObj?.Excute(this.MainChartObj.TableName, searchParam);
   }
 }

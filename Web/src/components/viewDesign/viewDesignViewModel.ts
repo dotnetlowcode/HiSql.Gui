@@ -65,7 +65,7 @@ export class ViewDesignViewModel {
 
   async AddTables(tableNames: string) {
     const tableNameArray = tableNames.split(`,`);
-    debugger;
+
     await SyncEach(tableNameArray, async (tableName: string) => {
       await this.AddTable(tableName);
       return true;
@@ -154,7 +154,6 @@ export class ViewDesignViewModel {
   TableViewName = ``;
 
   UpdateViewJson(viewJson: any) {
-    debugger;
     this.Sql = GraphHelper.toSQl(viewJson);
     return codeWapre(this.Sql, 'sql');
   }
@@ -188,6 +187,7 @@ export class ViewDesignViewModel {
     const { Data } = await ApiTestExcute(this.Sql, param, {
       pageSize: this.Top,
       pageIndex: 1,
+      hiSqlparam: {},
     });
     if (!Data || Data.List.length < 1) {
       throw `没有查询到任何数据!`;

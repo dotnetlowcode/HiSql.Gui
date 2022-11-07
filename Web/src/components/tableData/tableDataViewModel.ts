@@ -1,5 +1,6 @@
 import { List } from 'linqts';
 
+import { Dictionary } from '@/helper/arrayHelper';
 import config from '@/serverApi/config';
 import serverApiClient from '@/serverApi/httpClient';
 import { CreateExportTaskRequest } from '@/serverApi/request/tableData/createExportTaskRequest';
@@ -18,11 +19,9 @@ import {
 
 import { searchParamToWhereJson } from '../../serverApi/dataHelper';
 import { ColumnStruct, fieldSortFun } from '../../serverApi/models/columnStruct';
-import { TableDataDeleteRequest, TableDataRequest } from '../../serverApi/request';
+import { TableDataRequest } from '../../serverApi/request';
 import { TableGetColumnsRequest } from '../../serverApi/request/table/tableGetColums';
 import { apiError, getFieldMap, getTableColumns, tableData } from '../../serverApi/tableInfoAPIs';
-
-import { Dictionary } from '@/helper/arrayHelper';
 
 export type exportType = 'template' | 'currentData' | 'allData';
 export type ImportExcelResult = {
@@ -91,6 +90,8 @@ export default class TableDetailViewModel {
     }
     req.OrderByField = this.orderByField;
     req.WhereJson = this.searchParamObj;
+    req.HiSqlWhere = this.searchHiParamObj.HisqlWhere;
+    req.HiSqlWhereParam = this.searchHiParamObj.HiSqlWhereParam;
     const { Data: data } = await tableData(req);
     return data;
   }
@@ -101,9 +102,26 @@ export default class TableDetailViewModel {
   searchParamObj: { [key: string]: any } = {};
 
   /**
+   * hisql过滤
+   */
+  searchHiParamObj: {
+    HisqlWhere: string;
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    HiSqlWhereParam: Object;
+  } = {
+    HisqlWhere: ``,
+    HiSqlWhereParam: {},
+  };
+
+  /**
    * 搜索组件
    */
   searchFrom: any;
+
+  /**
+   * 搜索组件
+   */
+  whereTableV2: any;
 
   /**
    * 设置搜索参数
@@ -196,6 +214,8 @@ export default class TableDetailViewModel {
     } else if (type === 'currentData') {
       // 导出条件数据
       req.WhereJson = this.searchParamObj;
+      req.HiSqlWhere = this.searchHiParamObj.HisqlWhere;
+      req.HiSqlWhereParam = this.searchHiParamObj.HiSqlWhereParam;
     }
     req.PageSize = -1;
     req.Fields = this.fileds;

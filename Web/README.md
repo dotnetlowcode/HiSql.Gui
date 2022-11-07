@@ -1,68 +1,11 @@
-# HISql Gui Web
+# Ant Design Vue Pro Layout
 
+This template should help get you started developing with Vue 3 and Ant Design Vue 2 in Vite.
 
-### 相关框架
+### Recommended IDE Setup
 
-##### 这个是HiSql Gui 前端源码,整体基于Vue3+TS框架开发. 界面框架用的是 Ant Design Vue
+- [VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volar)
 
+### Type Support For `.vue` Imports in TS
 
-
-# 启动
-
-- 第一步
-
-##### 修改根目录下文件`.env.development`,将里面的ServerApiHost修改为您APi的服务器Host
-
-![image](https://user-images.githubusercontent.com/6754634/188842469-8230825b-fe72-4c46-b745-498368404f7f.png)
-
-- 第二步
-
-##### 依次执行脚本
-
-``` Shell
-  yarn 或者 npm i
-  
-  yarn dev 或者 npm run dev
-```
-
-#### 打开地址
-
- `http://localhost:3000/`
- 
- 用户名: `hisql`
- 
- 密码:  `123456`
-
-
-### 目录结构
-
-
-``` shell
-src
-├── App.vue
-├── assets
-│   ├── 资源引用
-├── auto-imports.d.ts
-├── components
-│   ├── 组建目录
-├── components.d.ts
-├── env.d.ts
-├── helper
-│   ├── 辅助类
-├── layouts
-│   ├── 模板页
-├── main.ts
-├── router
-│   └── index.ts
-├── serverApi
-│   ├── 对接服务端API
-├── store
-│   ├── 全局存储
-├── types
-│   └── typing.d.ts
-├── utils
-│   └── index.ts
-└── views
-    ├── 入口页面
-```
-
+Since TypeScript cannot handle type information for `.vue` imports, they are shimmed to be a generic Vue component type by default. In most cases this is fine if you don't really care about component prop types outside of templates. However, if you wish to get actual prop types in `.vue` imports (for example to get props validation when using manual `h(...)` calls), you can enable Volar's `.vue` type support plugin by running `Volar: Switch TS Plugin on/off` from VSCode command palette.

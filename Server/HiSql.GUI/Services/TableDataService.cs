@@ -61,7 +61,7 @@ namespace HiSql.GUI.Services
         public async Task<TransactionOperateResponse> TransactionOperate(TransactionOperateRequest request)
         {
             var resp = new TransactionOperateResponse();
-            sqlClient.BeginTran(System.Data.IsolationLevel.ReadCommitted);
+            //sqlClient.BeginTran(System.Data.IsolationLevel.ReadCommitted);
             try
             {
                 await request.Operates.ParallelForEachAsync(async operate =>
@@ -97,11 +97,11 @@ namespace HiSql.GUI.Services
                             break;
                     }
                 }, 1);
-                sqlClient.CommitTran();
+                // sqlClient.CommitTran();
             }
             catch (Exception ex)
             {
-                sqlClient.RollBackTran();
+                // sqlClient.RollBackTran();
                 throw ex;
             }
             return resp;
@@ -199,7 +199,7 @@ namespace HiSql.GUI.Services
             };
             if (request.LastUpdateTime.HasValue)
             {
-                where.Add("UpdateTime", OperType.GT, request.LastUpdateTime.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss.fff"));
+                where.Add("UpdateTime", OperType.GT, request.LastUpdateTime.Value.ToLocalTime().ToString("yyyy-MM-dd"));
             }
             var taskInfos = sqlClient.Query(TableTaskRepository.QueueTask).Field("*").Where(where).ToList<QueueTaskModel>();
             //var taskInfos = await tableTaskRepository.Value.Gets(request.TaskIds.ToArray());
@@ -304,17 +304,29 @@ namespace HiSql.GUI.Services
             {
                 TableName = tableName
             };
-            var query = sqlClient.Query(tableName).Field(param.Fields?.Split(','));
-            if (!string.IsNullOrWhiteSpace(param.HiSqlWhere))
-            {
-                //string sqlWhere = JsonQueryHelper.JsonWhereToSql(param.HiSqlWhere);
-                query = query.Where(param.HiSqlWhere);
-            }
+            //var query = sqlClient.Query(tableName).Field(param.Fields?.Split(','));
+            //if (!string.IsNullOrWhiteSpace(param.HiSqlWhere))
+            //{
+            //    //string sqlWhere = JsonQueryHelper.JsonWhereToSql(param.HiSqlWhere);
+            //    query = query.Where(param.HiSqlWhere);
+            //}
+            string queryFields = param.Fields.Length > 0 ? param.Fields : "*";
+            string distinct = param.Distinct ? "Distinct " : "";
+            var hisql = $"select {distinct}{queryFields} from {tableName} ";
             string sqlWhere = JsonQueryHelper.JsonWhereToSql(param.WhereJson);
-            if (!string.IsNullOrWhiteSpace(sqlWhere))
+            if (!string.IsNullOrWhiteSpace(param.HiSqlWhere) && !string.IsNullOrWhiteSpace(sqlWhere))
             {
-                query = query.Where(sqlWhere);
+                hisql += $" where {param.HiSqlWhere} and {sqlWhere}";
             }
+            else if (!string.IsNullOrWhiteSpace(param.HiSqlWhere))
+            {
+                hisql += $" where {param.HiSqlWhere}";
+            }
+            else if (!string.IsNullOrWhiteSpace(sqlWhere))
+            {
+                hisql += $" where {sqlWhere}";
+            }
+            IQuery query = param.HiSqlWhereParam.Count > 0 ? sqlClient.HiSql(hisql, param.HiSqlWhereParam) : sqlClient.HiSql(hisql);
             if (param.PageIndex >= 0)
             {
                 query = query.Skip(param.PageIndex).Take(param.PageSize);
