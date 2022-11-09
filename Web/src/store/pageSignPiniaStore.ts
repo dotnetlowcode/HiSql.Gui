@@ -18,10 +18,9 @@ export const pageSignPiniaStore = defineStore('pageSign', {
   },
   getters: {
     getTabsMenues:
-      (state: { currentTab: any; tabsMenues: PageSignItem[]; currentMenuType: string }) =>
+      (state: { currentTab: any; tabsMenues: Array<PageSignItem>; currentMenuType: string }) =>
       (_Id: string) => {
-        debugger;
-        let perms: Array<PageSignItem> = state.tabsMenues;
+        let perms: Array<PageSignItem> = state.tabsMenues || [];
 
         if (!state.currentMenuType) {
           const pageSign = pageSignPiniaStore();
@@ -31,7 +30,9 @@ export const pageSignPiniaStore = defineStore('pageSign', {
         }
         perms = perms.filter(x => x.Type === state.currentMenuType);
 
-        if (!_Id) return perms;
+        if (!_Id) {
+          return perms || [];
+        }
         return perms.find(x => x.Id === _Id);
       },
     getCurrentTab: (state: any) => () => {
@@ -52,7 +53,6 @@ export const pageSignPiniaStore = defineStore('pageSign', {
       state: { tabsMenues: Array<PageSignItem>; currentMenuType: string },
       data: PageSignItem,
     ) {
-      debugger;
       if (!data || typeof data !== 'object') return;
       let perTabs = state.tabsMenues;
       if (!perTabs || perTabs.length === 0) {
@@ -96,7 +96,6 @@ export const pageSignPiniaStore = defineStore('pageSign', {
         state.tabsMenues = newTabs;
       });
       const list = state.tabsMenues.filter(x => x.Type === state.currentMenuType);
-      debugger;
       if (!list || list.length === 0) {
         router.push({ name: 'emptypage' });
         const pageSign = pageSignPiniaStore();
@@ -131,7 +130,6 @@ export const pageSignPiniaStore = defineStore('pageSign', {
      * @returns
      */
     setCurrentMenuType(state: { currentMenuType: string }, value: string) {
-      debugger;
       state.currentMenuType = value;
     },
     /**

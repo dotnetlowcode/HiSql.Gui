@@ -10,7 +10,11 @@
         }
       "
     >
-      <a-tab-pane v-for="(tab, tabIndex) in tabsMenuesList" :key="tab.Id" :closable="false">
+      <a-tab-pane
+        v-for="(tab, tabIndex) in pageSign.getTabsMenues('') as Array<PageSignItem>"
+        :key="tab.Id"
+        :closable="false"
+      >
         <!-- :tab="tab.Name" -->
         <template #tab>
           <div class="pageSign-item" @contextmenu.prevent="openMoredBtn($event, tabIndex)">
@@ -78,23 +82,18 @@ const tabsHandles = ref([
     value: '5',
   },
 ]);
-debugger;
 const dropDownMenuBox = ref();
 const isShowDropDownMenu = ref(false);
 const handleTabIndex = ref(); // 删除操作选择的tab的索引
 const selectIndex = ref(0);
 const viewModel = reactive(new LeftMenuViewModel());
-
-const tabsMenuesList = ref();
-debugger;
-tabsMenuesList.value = pageSign.getTabsMenues('');
-debugger;
+const tabsMenuesList = ref<Array<PageSignItem>>([]);
+tabsMenuesList.value = pageSign.getTabsMenues('') as Array<PageSignItem>;
 
 watch(
   () => pageSign.tabsMenues,
   list => {
-    debugger;
-    tabsMenuesList.value = pageSign.getTabsMenues('');
+    tabsMenuesList.value = pageSign.getTabsMenues('') as Array<PageSignItem>;
   },
   { deep: true },
 );
