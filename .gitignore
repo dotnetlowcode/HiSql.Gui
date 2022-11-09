@@ -5,7 +5,6 @@
 .history/
 **/PublishProfiles/**
 **/.DS_Store
-/Server/HiSql.GUI/wwwroot/*
 /Server/HiSql.GUI/wwwroot/assets/*
 Web/node_modules/*
 Web/dist/*
