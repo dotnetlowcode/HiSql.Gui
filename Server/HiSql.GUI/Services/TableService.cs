@@ -212,10 +212,17 @@ where f.TabName=@tabName";// and fext.DbName is not null
             var query = sqlClient.Query(param.TableName).Field(param.Fields.Split(','));
             if (!string.IsNullOrWhiteSpace(param.HiSqlWhere))
             {
-                //string sqlWhere = JsonQueryHelper.JsonWhereToSql(param.HiSqlWhere);
-                //query = query.Where(param.HiSqlWhere,);
-                var sql = $"select {param.Fields} from {param.TableName} where {param.HiSqlWhere}";
-                query = sqlClient.HiSql(sql, param.HiSqlWhereParam);
+                if (param.HiSqlWhereParam.Count == 0)
+                {
+                    query = query.Where(param.HiSqlWhere);
+                }
+                else
+                {
+                    //string sqlWhere = JsonQueryHelper.JsonWhereToSql(param.HiSqlWhere);
+                    //query = query.Where(param.HiSqlWhere,);
+                    var sql = $"select {param.Fields} from {param.TableName} where {param.HiSqlWhere}";
+                    query = sqlClient.HiSql(sql, param.HiSqlWhereParam);
+                }
             }
             else
             {

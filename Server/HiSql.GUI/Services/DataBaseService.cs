@@ -101,7 +101,7 @@ namespace HiSql.GUI
             {
                 resp.List = await query.ToEObjectAsync();
             }
-            var k = resp.List.ToJson();
+            //var k = resp.List.ToJson();
             return resp;
         }
 
